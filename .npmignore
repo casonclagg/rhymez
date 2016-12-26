@@ -1,0 +1,10 @@
+# source
+src
+.idea
+
+# tests
+test
+test-es5
+
+# config
+.travis.yml
