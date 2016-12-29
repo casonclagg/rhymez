@@ -63,6 +63,7 @@ export default class Rhymez {
 
     // if word matches but is too short, run this again on all "entries" and return found
     _checkEntry(w, pronounciations, permuted, found, options) {
+        if(found.length > 0) console.log("w, pronounciations, permuted, found, options", w, pronounciations, permuted, found, options)
         if (pronounciations[0].length == 0) return found
 
         let matches = pronounciations.some(p => {
@@ -87,14 +88,19 @@ export default class Rhymez {
             })
             if(pronounciations.map(this.active)[0].length == permuted[0].split(" ").length) return found
             console.log(w, pronounciations.map(this.active)[0].length, permuted[0].split(" ").length, _.sumBy(found, "count"), found)
-            if (pronounciations[0].length < _.sumBy(found, "count")) {
+            if (permuted[0].split(" ").length > _.sumBy(found, "count")) {
                 for (let [w2, pronounciations2] of this.dict.entries()) {
-                    let check = this._checkEntry(w2, pronounciations2, permuted.map(x=> x.split(" ").splice(0, permuted[0].length - pronounciations[0].length)), found, options)
+                    console.log("permutedpermuted111", permuted)
+                    permuted = permuted.map(x=> x.split(" ").splice(0, permuted[0].length - pronounciations[0].length).join(" "))
+                    console.log("permutedpermuted222", permuted)
+                    let check = this._checkEntry(w2, pronounciations2, permuted, found, options)
                     if (check && check.length > 0) {
                         console.log("check",check)
                         return found.concat(check)
                     }
                 }
+            } else {
+                return found
             }
         }
         return null
