@@ -4,30 +4,42 @@ import {assert} from 'chai'
 
 suite('Rhymez:', () => {
 
-	test('rhymez loads', async () => {
-		let rhymes = new Rhymez()
-        let dict = await rhymes.load()
-		assert.isOk(dict)
-	})
+    // test('playing around', async () => {
+    //     let r = new Rhymez()
+    //     await r.load()
+    //
+    // })
 
-    test('rhymez is reasonably fast', async () => {
-        let COUNT = 100
-        let thingsToRhyme = "this is great, guys.".split(" ")
-		let r = new Rhymez()
-        await r.load()
-        let start = Date.now()
-        for(var i = 0; i < COUNT; i++) {
-            let rhymes = r.rhyme(_.sample(thingsToRhyme))
-        }
-        let end = Date.now()
-        console.log((end - start) / COUNT, "ms each call")
-        assert.isBelow(end - start, COUNT * 100)
-	})
-
-    test('rhymez rhymes', async () => {
+    test('assonance works', async () => {
         let r = new Rhymez()
         await r.load()
-        let rhymes = r.rhyme("test")
-        assert.isTrue(_.includes(rhymes, "BEST"))
+
+        let assonant = r.assonant("cat")
+
+        assert.isTrue(_.includes(assonant, "BACK"))
+        assert.isTrue(_.includes(assonant, "BAT"))
+
+        assonant = r.assonant("payday")
+        assert.isTrue(_.includes(assonant, "MELEE"))
+    })
+
+    test('rhyming works', async () => {
+        let r = new Rhymez()
+        await r.load()
+
+        let rhymes = r.rhyme("generate")
+        assert.isTrue(_.includes(rhymes, "VENERATE"))
+
+        rhymes = r.rhyme("rate")
+        assert.isFalse(_.includes(rhymes, "VENERATE"))
+		assert.isTrue(_.includes(rhymes, "BAIT"))
+
+        // Loosen up...
+        rhymes = r.rhyme("pay day", true)
+		assert.isTrue(_.includes(rhymes, "HEYDAY"))
+
+        // TODO - remove doubles
+        // rhymes = r.rhyme("venn err rate")
+		// assert.isTrue(_.includes(rhymes, "VENERATE"))
     })
 })
