@@ -36,66 +36,31 @@ export default class Rhymez {
         return this.dict.get(word.toUpperCase())
     }
 
-    all(ws) {
-        return ws.join(' ')
-    }
+    rhyme(phrase, options) {
+        options = options || {}
+        phrase = phrase.toUpperCase()
+        let words = phrase.split(" ")
 
-    active(ws) {
-        let firstNonConsonant = _.findIndex(ws, w => {
-            return !w.match(IS_CONSONANT)
-        })
+        if (_.some(words, x => !this.dict.has(x))) return []      // Doesn't exist in the dictionary
 
-        return ws.slice(firstNonConsonant).join(' ')
-            // .replace(/[0-9]/ig, "")
-    }
-
-    _permutations(arrayOfArraysOfArrays, ignoreNumbers) {
-        if (arrayOfArraysOfArrays.length === 0) return []
-        if (arrayOfArraysOfArrays.length === 1) return arrayOfArraysOfArrays[0]
-        var result = [];
-        var allCasesOfRest = this._permutations(arrayOfArraysOfArrays.slice(1), ignoreNumbers)
-        for (var c in allCasesOfRest) {
-            for (var i = 0; i < arrayOfArraysOfArrays[0].length; i++) {
-                let thing = arrayOfArraysOfArrays[0][i] + " " + (allCasesOfRest[c])
-                // if(ignoreNumbers) {
-                //     thing = thing.replace(/[0-9]/ig, "")
-                // }
-                result.push(thing)
-            }
-        }
-        return result
-    }
-
-    // TODO - Option to ignore vowel #s for loose rhymes
-
-    rhyme(phrase, isLoose) {
-        let words = phrase.split(" ").map(s => s.toUpperCase())
-        let bigmapped = []
-        let word = words[0]
-        word = word.toUpperCase()
-        if (!this.dict.has(word)) return []
-        let mapped = this.dict.get(word).map(this.active)
-        bigmapped.push(mapped)
-
-        for (var i = 1; i < words.length; i++) {
-            word = words[i]
-            word = word.toUpperCase()
-            if (!this.dict.has(word)) return []
-            mapped = this.dict.get(word).map(this.all)
-            bigmapped.push(mapped)
-        }
-        if (bigmapped.length == 0) return []
-        let permuted = this._permutations(bigmapped, true)
+        let mapped = words.map(this.pronunciation, this)
+        mapped[0] = mapped[0].map(this.active)                  // Remove up to first vowel of first word only
+        mapped = mapped.map(x=> x.map(this.join))               // WTF, sorry.
+        let permuted = this._permutations(mapped)
 
         var rhymes = []
         for (let [w, pronounciations] of this.dict.entries()) {
             if (_.includes(words, w)) continue
 
             let some = pronounciations.some(p => {
-                let activePart = this.active(p)
-                if(isLoose) {
-                    permuted = permuted.map(this._removeNumbers)
+                let activePart = this.join(this.active(p))
+                if(options.isLoose) {
+                    permuted = permuted.map(this._removeNumbers, this)
                     activePart = this._removeNumbers(activePart)
+                }
+                if(options.assonance) {
+                    permuted = permuted.map(this._starConsonants, this)
+                    activePart = this._starConsonants(activePart)
                 }
                 return permuted.indexOf(activePart) !== -1
             })
@@ -104,6 +69,12 @@ export default class Rhymez {
         }
 
         return rhymes
+    }
+
+    assonance(phrase, options) {
+        options = options || {}
+        options.assonance = true
+        return this.rhyme(phrase, options)
     }
 
     // Used to loosen up rhymes (may find poor rhymes...)
@@ -118,40 +89,29 @@ export default class Rhymez {
         })
     }
 
-    assonant(phrase) {
-        let words = phrase.split(" ").map(s => s.toUpperCase())
-        let bigmapped = []
-        let word = words[0]
-        word = word.toUpperCase()
-        if (!this.dict.has(word)) return []
-        let mapped = this.dict.get(word).map(this.active)
-        bigmapped.push(mapped)
+    join(ws) {
+        return ws.join(' ')
+    }
 
-        for (var i = 1; i < words.length; i++) {
-            word = words[i]
-            word = word.toUpperCase()
-            if (!this.dict.has(word)) return []
-            mapped = this.dict.get(word).map(this.all)
-            bigmapped.push(mapped)
+    active(ws) {
+        let firstNonConsonant = _.findIndex(ws, w => {
+            return !w.match(IS_CONSONANT)
+        })
+
+        return ws.slice(firstNonConsonant)
+    }
+
+    _permutations(arrayOfArraysOfArrays) {
+        if (arrayOfArraysOfArrays.length === 0) return []
+        if (arrayOfArraysOfArrays.length === 1) return arrayOfArraysOfArrays[0]
+        var result = [];
+        var allCasesOfRest = this._permutations(arrayOfArraysOfArrays.slice(1))
+        for (var c in allCasesOfRest) {
+            for (var i = 0; i < arrayOfArraysOfArrays[0].length; i++) {
+                let thing = arrayOfArraysOfArrays[0][i] + " " + (allCasesOfRest[c])
+                result.push(thing)
+            }
         }
-        if (bigmapped.length == 0) return []
-        let permuted = this._permutations(bigmapped, true)
-
-        permuted = permuted.map(this._starConsonants)
-
-        var rhymes = []
-        for (let [w, pronounciations] of this.dict.entries()) {
-            if (_.includes(words, w)) continue
-
-            let some = pronounciations.some(p => {
-                let thing = this.active(p)
-                thing = this._starConsonants(thing)
-                return permuted.indexOf(thing) !== -1
-            })
-
-            if (some) rhymes.push(w)
-        }
-
-        return rhymes
+        return result
     }
 }

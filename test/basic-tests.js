@@ -7,19 +7,20 @@ suite('Rhymez:', () => {
     // test('playing around', async () => {
     //     let r = new Rhymez()
     //     await r.load()
-    //
+    //     let rhymes = r.assonance("cat")
+    //     console.log(rhymes)
     // })
 
     test('assonance works', async () => {
         let r = new Rhymez()
         await r.load()
 
-        let assonant = r.assonant("cat")
+        let assonant = r.assonance("cat")
 
         assert.isTrue(_.includes(assonant, "BACK"))
         assert.isTrue(_.includes(assonant, "BAT"))
 
-        assonant = r.assonant("payday")
+        assonant = r.assonance("payday")
         assert.isTrue(_.includes(assonant, "MELEE"))
     })
 
@@ -35,7 +36,7 @@ suite('Rhymez:', () => {
 		assert.isTrue(_.includes(rhymes, "BAIT"))
 
         // Loosen up...
-        rhymes = r.rhyme("pay day", true)
+        rhymes = r.rhyme("pay day", {isLoose:true})
 		assert.isTrue(_.includes(rhymes, "HEYDAY"))
 
         // TODO - remove doubles
