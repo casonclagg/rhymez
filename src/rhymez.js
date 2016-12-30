@@ -40,71 +40,52 @@ export default class Rhymez {
         options = options || {}
         phrase = phrase.toUpperCase()
         let words = phrase.split(" ")
-
         if (_.some(words, x => !this.dict.has(x))) return [] // Doesn't exist in the dictionary
-
         let mapped = words.map(this.pronunciation, this)
         mapped[0] = mapped[0].map(this.active) // Remove up to first vowel of first word only
         mapped = mapped.map(x => x.map(this.join)) // WTF, sorry.
         let permuted = this._permutations(mapped)
 
-        var rhymes = []
-        for (let [w, pronounciations] of this.dict.entries()) {
-            if (_.includes(words, w)) continue
-            if(w == "DAY") console.log(w, pronounciations, permuted)
-            let check = this._checkEntry(w, pronounciations, permuted, [], options)
-            if (check && check.length > 0) {
-                rhymes.push(check.map(w=> w.word).join(" "))
+        let rhymes = this._getMatches(permuted.map(x=> x.split(" ")), options)
+
+        return rhymes
+    }
+
+    _getMatches(soundsToMatch, options) {
+        let rhymes = []
+        if(options.assonance) {
+            soundsToMatch = soundsToMatch.map(x => x.map(this._starConsonants, this), this)
+        }
+        if(options.isLoose) {
+            soundsToMatch = soundsToMatch.map(x => x.map(this._removeNumbers, this), this)
+        }
+        for (let [word, wordPronounciations] of this.dict.entries()) {
+            let doesRhyme = false
+            if(options.assonance) wordPronounciations = wordPronounciations.map(x => x.map(this._starConsonants, this), this)
+            if(options.isLoose) wordPronounciations = wordPronounciations.map(x => x.map(this._removeNumbers, this), this)
+
+            if(this.active(wordPronounciations[0]).length == soundsToMatch[0].length) {
+                doesRhyme = _.some(wordPronounciations.map(this.active, this), wp => this.rhymeCheck(soundsToMatch, wp))
+                if(doesRhyme) rhymes.push(word)
+            } else {
+                // Partial rhymes, use whole pronunciation, not just this.active(pronunciation)
+                doesRhyme = _.some(wordPronounciations, wp => this.rhymeCheck(soundsToMatch, wp))
+                if(doesRhyme) {
+                    let remainderToMatch = soundsToMatch.map(x=> {
+                        return x.slice(0, soundsToMatch.length - wordPronounciations[0].length - 1)
+                    })
+                    let addons = this._getMatches(remainderToMatch, options)
+
+                    addons = addons.map(a => a + " " + word)
+                    rhymes = rhymes.concat(addons)
+                }
             }
         }
 
         return rhymes
     }
 
-    // if word matches but is too short, run this again on all "entries" and return found
-    _checkEntry(w, pronounciations, permuted, found, options) {
-        if(found.length > 0) console.log("w, pronounciations, permuted, found, options", w, pronounciations, permuted, found, options)
-        if (pronounciations[0].length == 0) return found
 
-        let matches = pronounciations.some(p => {
-            let activePart = this.join(this.active(p))
-            if (options.isLoose) {
-                permuted = permuted.map(this._removeNumbers, this)
-                activePart = this._removeNumbers(activePart)
-            }
-            if (options.assonance) {
-                permuted = permuted.map(this._starConsonants, this)
-                activePart = this._starConsonants(activePart)
-            }
-            // check for partial end too...
-            if(w == "DAY") console.log("permuted, activePart", permuted, activePart, options)
-            return this.rhymeCheck(permuted, activePart)
-        })
-
-        if (matches) {
-            found.unshift({
-                word: w,
-                count: pronounciations.map(this.active)[0].length
-            })
-            if(pronounciations.map(this.active)[0].length == permuted[0].split(" ").length) return found
-            console.log(w, pronounciations.map(this.active)[0].length, permuted[0].split(" ").length, _.sumBy(found, "count"), found)
-            if (permuted[0].split(" ").length > _.sumBy(found, "count")) {
-                for (let [w2, pronounciations2] of this.dict.entries()) {
-                    console.log("permutedpermuted111", permuted)
-                    permuted = permuted.map(x=> x.split(" ").splice(0, permuted[0].length - pronounciations[0].length).join(" "))
-                    console.log("permutedpermuted222", permuted)
-                    let check = this._checkEntry(w2, pronounciations2, permuted, found, options)
-                    if (check && check.length > 0) {
-                        console.log("check",check)
-                        return found.concat(check)
-                    }
-                }
-            } else {
-                return found
-            }
-        }
-        return null
-    }
 
     // This works now...
     rhymeCheck(permuted, activePart) {
@@ -122,8 +103,6 @@ export default class Rhymez {
         }
         return false
     }
-
-
 
     assonance(phrase, options) {
         options = options || {}
