@@ -7,10 +7,14 @@ let dictFile = path.join(__dirname, 'data/cmudict.dict')
 const IS_CONSONANT = /^[^AEIOU]/i
 const IS_VOWEL = /^[AEIOU]/i
 
+// TODO: Speed it up - Pare down search space for subsequent calls, break out of loops early if possible etc...
+// TODO: collapse stars for assonance?  Make it an options maybe...
+
 export default class Rhymez {
     constructor(options) {
         this.options = options || {}
         this.dict = new Map()
+        this.cache = {}
     }
 
     load(file) {
@@ -52,7 +56,11 @@ export default class Rhymez {
     }
 
     _getMatches(soundsToMatch, options) {
+        if(this.cache[soundsToMatch.join(" ")]) return this.cache[soundsToMatch.join(" ")]
+
         let rhymes = []
+        if(soundsToMatch[0].length == 0) return []
+
         if(options.assonance) {
             soundsToMatch = soundsToMatch.map(x => x.map(this._starConsonants, this), this)
         }
@@ -63,6 +71,8 @@ export default class Rhymez {
             let doesRhyme = false
             if(options.assonance) wordPronounciations = wordPronounciations.map(x => x.map(this._starConsonants, this), this)
             if(options.isLoose) wordPronounciations = wordPronounciations.map(x => x.map(this._removeNumbers, this), this)
+
+            // if(word == "GUNS") console.log("GUNS", wordPronounciations, soundsToMatch)
 
             if(this.active(wordPronounciations[0]).length == soundsToMatch[0].length) {
                 doesRhyme = _.some(wordPronounciations.map(this.active, this), wp => this.rhymeCheck(soundsToMatch, wp))
@@ -81,11 +91,9 @@ export default class Rhymez {
                 }
             }
         }
-
+        this.cache[soundsToMatch.join(" ")] = rhymes
         return rhymes
     }
-
-
 
     // This works now...
     rhymeCheck(permuted, activePart) {
@@ -117,7 +125,7 @@ export default class Rhymez {
 
     // Used for assonance
     _starConsonants(x) {
-        return x.replace(/(\s|^)([^AEIOU])(\s|$)/ig, (all, a, b, c) => {
+        return x.replace(/(\s|^)([BCDFGHJKLMNPQRSTVWXYZ](\s|$))/ig, (all, a, b, c) => {
             return `${a}*${c}`
         })
     }
