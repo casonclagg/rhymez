@@ -1,7 +1,7 @@
 {
   "name": "rhymez",
   "description": "Fast rhymes for javascript.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "./lib/rhymez.js",
   "devDependencies": {
     "babel-cli": "^6.2.4",
