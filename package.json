@@ -1,7 +1,7 @@
 {
   "name": "rhymez",
-  "description": "Fast rhymes for javascript.",
-  "version": "1.0.1",
+  "description": "The only rhyming package for node that can rhyme from multiple words and find mutli-word rhymes with assonance!",
+  "version": "1.0.2",
   "main": "./lib/rhymez.js",
   "devDependencies": {
     "babel-cli": "^6.2.4",
@@ -34,10 +34,8 @@
     "url": "https://github.com/casonclagg/rhymez"
   },
   "dependencies": {
-    "co": "^4.6.0",
     "fs-extra": "^1.0.0",
     "line-reader": "^0.4.0",
-    "lodash": "^4.17.2",
-    "node-dir": "^0.1.16"
+    "lodash": "^4.17.2"
   }
 }
