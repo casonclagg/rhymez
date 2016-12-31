@@ -8,6 +8,8 @@ Note: Its significantly slower when searching multiple word rhymes.
 
 #### Usage
 
+    npm i -S rhymez
+
 ```javascript
 
 import Rhymez from 'rhymez'
