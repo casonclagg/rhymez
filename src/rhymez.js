@@ -77,7 +77,7 @@ export default class Rhymez {
             if(this.active(wordPronounciations[0]).length == soundsToMatch[0].length) {
                 doesRhyme = _.some(wordPronounciations.map(this.active, this), wp => this.rhymeCheck(soundsToMatch, wp))
                 if(doesRhyme) rhymes.push(word)
-            } else {
+            } else if(options.multiword) {
                 // Partial rhymes, use whole pronunciation, not just this.active(pronunciation)
                 doesRhyme = _.some(wordPronounciations, wp => this.rhymeCheck(soundsToMatch, wp))
                 if(doesRhyme) {

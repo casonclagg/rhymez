@@ -6,7 +6,7 @@ suite('build:', () => {
     test('lib can rhyme', () => {
         let r = new Rhymez()
         r.load().then(() => {
-            let rhymes = r.rhyme("dog", {isLoose: false})
+            let rhymes = r.rhyme("dog")
 
             assert.isTrue(_.includes(rhymes, "LOG"))
         })

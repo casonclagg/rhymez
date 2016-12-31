@@ -12,13 +12,16 @@ suite('Rhymez:', () => {
 
         let rhymes = r.rhyme("orange", {
             assonance: true,
-            isLoose: true
+            isLoose: true,
+            multiword: true
         })
 
         // rhymes.forEach(x => console.log(x))
 
         assert.isTrue(_.includes(rhymes, "FLOOR LUNGE"))
-            // assert.isTrue(_.includes(rhymes, "MORE GUNS")) // TODO - its more than just super loose assonance, the G from guns comes into play with the g from orange...
+
+        // TODO - its more than just super loose assonance, the G from guns comes into play with the g from orange...
+        // assert.isTrue(_.includes(rhymes, "MORE GUNS"))
     })
 
 
@@ -66,10 +69,22 @@ suite('Rhymez:', () => {
         let r = new Rhymez()
         await r.load()
         let rhymes = r.rhyme("Payday", {
-            isLoose: true
+            isLoose: true,
+            multiword: true
         })
 
         assert.isTrue(_.includes(rhymes, "SLAY DAY"))
+    })
+
+    test('one to many rhymes ignored when multiword is false', async() => {
+        let r = new Rhymez()
+        await r.load()
+        let rhymes = r.rhyme("Payday", {
+            isLoose: true,
+            multiword: false
+        })
+
+        assert.isFalse(_.includes(rhymes, "SLAY DAY"))
     })
 
     test('assonance works', async() => {
