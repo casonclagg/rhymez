@@ -30,7 +30,8 @@ export default class Rhymez {
 
                     this.dict.get(word).push(words.slice(1))
 
-                    if (last) return resolve(this.dict)
+                    if (last)
+                        return resolve(this.dict)
                 }
             })
         })
@@ -44,44 +45,52 @@ export default class Rhymez {
         options = options || {}
         phrase = phrase.toUpperCase()
         let words = phrase.split(" ")
-        if (_.some(words, x => !this.dict.has(x))) return [] // Doesn't exist in the dictionary
+        if (_.some(words, x => !this.dict.has(x)))
+            return [] // Doesn't exist in the dictionary
         let mapped = words.map(this.pronunciation, this)
         mapped[0] = mapped[0].map(this.active) // Remove up to first vowel of first word only
         mapped = mapped.map(x => x.map(this.join)) // WTF, sorry.
         let permuted = this._permutations(mapped)
 
-        let rhymes = this._getMatches(permuted.map(x=> x.split(" ")), options)
+        let rhymes = this._getMatches(permuted.map(x => x.split(" ")), options)
 
         return rhymes
     }
 
+    // This is terrible, I'm sorry.
+    _optsToString(options) {
+        let entries = _.entries(options)
+        entries = entries.filter(x => x[1] == true)
+        return entries.map(x=> x[0]).join("-")
+    }
+
     _getMatches(soundsToMatch, options) {
-        if(this.cache[soundsToMatch.join(" ")]) return this.cache[soundsToMatch.join(" ")]
+        if (this.cache[soundsToMatch.join(" ") + this._optsToString(options)]) {
+            return this.cache[soundsToMatch.join(" ") + this._optsToString(options)]
+        }
 
         let rhymes = []
-        if(soundsToMatch[0].length == 0) return []
+        if (soundsToMatch[0].length == 0) return []
 
-        if(options.assonance) {
+        if (options.assonance) {
             soundsToMatch = soundsToMatch.map(x => x.map(this._starConsonants, this), this)
         }
-        if(options.isLoose) {
+        if (options.isLoose) {
             soundsToMatch = soundsToMatch.map(x => x.map(this._removeNumbers, this), this)
         }
         for (let [word, wordPronounciations] of this.dict.entries()) {
             let doesRhyme = false
-            if(options.assonance) wordPronounciations = wordPronounciations.map(x => x.map(this._starConsonants, this), this)
-            if(options.isLoose) wordPronounciations = wordPronounciations.map(x => x.map(this._removeNumbers, this), this)
+            if (options.assonance) wordPronounciations = wordPronounciations.map(x => x.map(this._starConsonants, this), this)
+            if (options.isLoose) wordPronounciations = wordPronounciations.map(x => x.map(this._removeNumbers, this), this)
 
-            // if(word == "GUNS") console.log("GUNS", wordPronounciations, soundsToMatch)
-
-            if(this.active(wordPronounciations[0]).length == soundsToMatch[0].length) {
+            if (this.active(wordPronounciations[0]).length == soundsToMatch[0].length) {
                 doesRhyme = _.some(wordPronounciations.map(this.active, this), wp => this.rhymeCheck(soundsToMatch, wp))
-                if(doesRhyme) rhymes.push(word)
-            } else if(options.multiword) {
+                if (doesRhyme) rhymes.push(word)
+            } else if (options.multiword) {
                 // Partial rhymes, use whole pronunciation, not just this.active(pronunciation)
                 doesRhyme = _.some(wordPronounciations, wp => this.rhymeCheck(soundsToMatch, wp))
-                if(doesRhyme) {
-                    let remainderToMatch = soundsToMatch.map(x=> {
+                if (doesRhyme) {
+                    let remainderToMatch = soundsToMatch.map(x => {
                         return x.slice(0, soundsToMatch.length - wordPronounciations[0].length - 1)
                     })
                     let addons = this._getMatches(remainderToMatch, options)
@@ -91,22 +100,25 @@ export default class Rhymez {
                 }
             }
         }
-        this.cache[soundsToMatch.join(" ")] = rhymes
+        this.cache[soundsToMatch.join(" ") + this._optsToString(options)] = rhymes
         return rhymes
     }
 
     // This works now...
     rhymeCheck(permuted, activePart) {
-        if (!activePart || activePart.length === 0) return false
+        if (!activePart || activePart.length === 0)
+            return false
 
         for (let x of permuted) {
-            if (activePart.length > x.length) continue
+            if (activePart.length > x.length)
+                continue
             for (let y = x.length - 1; y >= 0; y--) {
                 let activePartIndex = activePart.length - ((x.length - 1) - y) - 1
                 if (x[y] != activePart[activePartIndex]) {
                     break
                 }
-                if (activePartIndex == 0) return true
+                if (activePartIndex == 0)
+                    return true
             }
         }
         return false
@@ -143,8 +155,10 @@ export default class Rhymez {
     }
 
     _permutations(arrayOfArraysOfArrays) {
-        if (arrayOfArraysOfArrays.length === 0) return []
-        if (arrayOfArraysOfArrays.length === 1) return arrayOfArraysOfArrays[0]
+        if (arrayOfArraysOfArrays.length === 0)
+            return []
+        if (arrayOfArraysOfArrays.length === 1)
+            return arrayOfArraysOfArrays[0]
         var result = [];
         var allCasesOfRest = this._permutations(arrayOfArraysOfArrays.slice(1))
         for (var c in allCasesOfRest) {

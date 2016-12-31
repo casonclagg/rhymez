@@ -24,6 +24,23 @@ suite('Rhymez:', () => {
         // assert.isTrue(_.includes(rhymes, "MORE GUNS"))
     })
 
+    test('cache doesnt interfere with varied options', async() => {
+        let r = new Rhymez()
+        await r.load()
+
+        let rhymes = r.rhyme("best", {
+            assonance: false,
+            isLoose: false,
+            multiword: false
+        })
+
+        let assonants = r.rhyme("best", {
+            assonance: true,
+            isLoose: false,
+            multiword: false
+        })
+        assert.notEqual(assonants.length, rhymes.length)
+    })
 
     test('rhymeCheck works', async() => {
         let r = new Rhymez()

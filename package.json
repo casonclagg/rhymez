@@ -1,7 +1,7 @@
 {
   "name": "rhymez",
   "description": "The only rhyming package for node that can rhyme from multiple words and find mutli-word rhymes with assonance!",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "./lib/rhymez.js",
   "devDependencies": {
     "babel-cli": "^6.2.4",
