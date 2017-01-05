@@ -8,13 +8,9 @@ Note: Its significantly slower when searching multiple word rhymes.
 
 #### Usage
 
-<<<<<<< 28e7feaf5a3d271a2eafb07a6394285dfcbbce2c
-    npm i -S rhymez
-=======
 ```shell
 npm install -S rhymez
 ```
->>>>>>> readme
 
 ```javascript
 
