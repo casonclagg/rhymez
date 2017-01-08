@@ -61,7 +61,8 @@ export default class Rhymez {
     _optsToString(options) {
         let entries = _.entries(options)
         entries = entries.filter(x => x[1] == true)
-        return entries.map(x => x[0]).join("-")
+        let x = entries.map(x => x[0]).join("-")
+        return x
     }
 
     // =(
@@ -69,9 +70,6 @@ export default class Rhymez {
         if (this.cache[soundsToMatch.join(" ") + this._optsToString(options)]) {
             return this.cache[soundsToMatch.join(" ") + this._optsToString(options)]
         }
-
-        let activeFunction = this.active
-        if(options.alliteration) activeFunction = this.activeAlliteration
 
         let rhymes = []
         if (soundsToMatch[0].length == 0) return []
@@ -82,26 +80,34 @@ export default class Rhymez {
         if (options.isLoose) {
             soundsToMatch = soundsToMatch.map(x => x.map(this._removeNumbers, this), this)
         }
+
         for (let [word, wordPronounciations] of this.dict.entries()) {
-            if(_.includes(words, word.toUpperCase())) continue
+            if (_.includes(words, word.toUpperCase())) continue
             let doesRhyme = false
             if (options.assonance) wordPronounciations = wordPronounciations.map(x => x.map(this._starConsonants, this), this)
             if (options.isLoose) wordPronounciations = wordPronounciations.map(x => x.map(this._removeNumbers, this), this)
+            if(options.alliteration) {
+                if (this.activeAlliteration(wordPronounciations[0]).length == soundsToMatch[0].length) {
+                    doesRhyme = _.some(wordPronounciations.map(this.activeAlliteration, this), wp => this.rhymeCheck(soundsToMatch, wp))
+                    if (doesRhyme) rhymes.push(word)
+                }
+            } else {
+                if (this.active(wordPronounciations[0]).length == soundsToMatch[0].length) {
+                    doesRhyme = _.some(wordPronounciations.map(this.active, this), wp => this.rhymeCheck(soundsToMatch, wp))
+                    if (doesRhyme) rhymes.push(word)
+                } else if (options.multiword) {
+                    // Partial rhymes, use whole pronunciation, not just this.active(pronunciation)
+                    doesRhyme = _.some(wordPronounciations, wp => this.rhymeCheck(soundsToMatch, wp))
+                    if (doesRhyme) {
+                        let remainderToMatch = soundsToMatch.map(x => {
+                            return x.slice(0, soundsToMatch.length - wordPronounciations[0].length - 1)
+                        })
 
-            if (activeFunction(wordPronounciations[0]).length == soundsToMatch[0].length) {
-                doesRhyme = _.some(wordPronounciations.map(activeFunction, this), wp => this.rhymeCheck(soundsToMatch, wp))
-                if (doesRhyme) rhymes.push(word)
-            } else if (options.multiword) {
-                // Partial rhymes, use whole pronunciation, not just this.active(pronunciation)
-                doesRhyme = _.some(wordPronounciations, wp => this.rhymeCheck(soundsToMatch, wp))
-                if (doesRhyme) {
-                    let remainderToMatch = soundsToMatch.map(x => {
-                        return x.slice(0, soundsToMatch.length - wordPronounciations[0].length - 1)
-                    })
-                    let addons = this._getMatches(remainderToMatch, options)
+                        let addons = this._getMatches(remainderToMatch, options)
 
-                    addons = addons.map(a => a + " " + word)
-                    rhymes = rhymes.concat(addons)
+                        addons = addons.map(a => a + " " + word)
+                        rhymes = rhymes.concat(addons)
+                    }
                 }
             }
         }
@@ -173,15 +179,16 @@ export default class Rhymez {
 
     activeAlliteration(ws) {
         // active rhyming region: slice off the trailing consonants
-        for (var i = ws.length - 1; i > 0; i--) {
-            if (!ws[i].match(IS_CONSONANT)) {
-                break;
+        let arr = ws.slice(0)
+        for (var i = arr.length - 1; i > 0; i--) {
+            if (!arr[i].match(IS_CONSONANT)) {
+                break
             }
         }
 
-        ws.splice(i + 1);
+        arr.splice(i + 1)
 
-        return ws;
+        return arr
     }
 
     active(ws) {

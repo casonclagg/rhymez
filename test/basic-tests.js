@@ -21,17 +21,21 @@ suite('Rhymez:', () => {
         assert.isTrue(_.includes(alliterations, "ORAL"))
     })
 
-    test('Fix this...', async() => {
+    test('impure function bug is fixed for alliteration activation function', async() => {
         let r = new Rhymez()
         await r.load()
 
-        let rhymes = r.rhyme("orange", {
-            isLoose: true,
-            multiword: true
-        })
+        let key = "ACE"
+        let rhymes = r.rhyme(key)
+        rhymes = r.alliteration(key)
+        rhymes = r.assonance(key)
 
-        // rhymes.forEach(x => console.log(x))
-        assert.isFalse(_.includes(rhymes, "ORAL ORANGE"))
+        key = "TEST"
+        rhymes = r.rhyme(key).length
+        r.alliteration(key)
+        let assonances = r.assonance(key).length
+
+        assert.isBelow(rhymes, assonances)
     })
 
     test('Multi-word loose assonance', async() => {
