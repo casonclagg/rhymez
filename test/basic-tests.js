@@ -6,6 +6,34 @@ import {
 
 suite('Rhymez:', () => {
 
+    test('alliteration works', async() => {
+        let r = new Rhymez()
+        await r.load()
+
+        let alliterations = r.alliteration("orange", {
+            alliteration: true,
+            isLoose: true,
+            multiword: true
+        })
+
+        // alliterations.forEach(x => console.log(x))
+
+        assert.isTrue(_.includes(alliterations, "ORAL"))
+    })
+
+    test('Fix this...', async() => {
+        let r = new Rhymez()
+        await r.load()
+
+        let rhymes = r.rhyme("orange", {
+            isLoose: true,
+            multiword: true
+        })
+
+        // rhymes.forEach(x => console.log(x))
+        assert.isFalse(_.includes(rhymes, "ORAL ORANGE"))
+    })
+
     test('Multi-word loose assonance', async() => {
         let r = new Rhymez()
         await r.load()

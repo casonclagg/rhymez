@@ -52,7 +52,7 @@ export default class Rhymez {
         mapped = mapped.map(x => x.map(this.join)) // WTF, sorry.
         let permuted = this._permutations(mapped)
 
-        let rhymes = this._getMatches(permuted.map(x => x.split(" ")), options)
+        let rhymes = this._getMatches(permuted.map(x => x.split(" ")), options, words)
 
         return rhymes
     }
@@ -61,13 +61,17 @@ export default class Rhymez {
     _optsToString(options) {
         let entries = _.entries(options)
         entries = entries.filter(x => x[1] == true)
-        return entries.map(x=> x[0]).join("-")
+        return entries.map(x => x[0]).join("-")
     }
 
-    _getMatches(soundsToMatch, options) {
+    // =(
+    _getMatches(soundsToMatch, options, words) {
         if (this.cache[soundsToMatch.join(" ") + this._optsToString(options)]) {
             return this.cache[soundsToMatch.join(" ") + this._optsToString(options)]
         }
+
+        let activeFunction = this.active
+        if(options.alliteration) activeFunction = this.activeAlliteration
 
         let rhymes = []
         if (soundsToMatch[0].length == 0) return []
@@ -79,12 +83,13 @@ export default class Rhymez {
             soundsToMatch = soundsToMatch.map(x => x.map(this._removeNumbers, this), this)
         }
         for (let [word, wordPronounciations] of this.dict.entries()) {
+            if(_.includes(words, word.toUpperCase())) continue
             let doesRhyme = false
             if (options.assonance) wordPronounciations = wordPronounciations.map(x => x.map(this._starConsonants, this), this)
             if (options.isLoose) wordPronounciations = wordPronounciations.map(x => x.map(this._removeNumbers, this), this)
 
-            if (this.active(wordPronounciations[0]).length == soundsToMatch[0].length) {
-                doesRhyme = _.some(wordPronounciations.map(this.active, this), wp => this.rhymeCheck(soundsToMatch, wp))
+            if (activeFunction(wordPronounciations[0]).length == soundsToMatch[0].length) {
+                doesRhyme = _.some(wordPronounciations.map(activeFunction, this), wp => this.rhymeCheck(soundsToMatch, wp))
                 if (doesRhyme) rhymes.push(word)
             } else if (options.multiword) {
                 // Partial rhymes, use whole pronunciation, not just this.active(pronunciation)
@@ -124,6 +129,26 @@ export default class Rhymez {
         return false
     }
 
+    alliteration(phrase, options) {
+        options = options || {}
+        options.multiword = false
+        options.loose = false
+        options.alliteration = true
+        phrase = phrase.toUpperCase()
+
+        let words = phrase.split(" ")
+        if (_.some(words, x => !this.dict.has(x))) return [] // Doesn't exist in the dictionary
+
+        let mapped = words.map(this.pronunciation, this)
+        mapped[0] = mapped[0].map(this.activeAlliteration) // Remove up to first vowel of first word only
+        mapped = mapped.map(x => x.map(this.join)) // WTF, sorry.
+        let permuted = this._permutations(mapped)
+
+        let alliterations = this._getMatches(permuted.map(x => x.split(" ")), options, words)
+
+        return alliterations
+    }
+
     assonance(phrase, options) {
         options = options || {}
         options.assonance = true
@@ -144,6 +169,19 @@ export default class Rhymez {
 
     join(ws) {
         return ws.join(' ')
+    }
+
+    activeAlliteration(ws) {
+        // active rhyming region: slice off the trailing consonants
+        for (var i = ws.length - 1; i > 0; i--) {
+            if (!ws[i].match(IS_CONSONANT)) {
+                break;
+            }
+        }
+
+        ws.splice(i + 1);
+
+        return ws;
     }
 
     active(ws) {
