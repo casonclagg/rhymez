@@ -46,12 +46,15 @@ export default class Rhymez {
         phrase = phrase.toUpperCase()
         let words = phrase.split(" ")
         if (_.some(words, x => !this.dict.has(x)))
+		{
             return [] // Doesn't exist in the dictionary
-        let mapped = words.map(this.pronunciation, this)
+		}
+		let mapped = words.map(this.pronunciation, this)
         mapped[0] = mapped[0].map(this.active) // Remove up to first vowel of first word only
         mapped = mapped.map(x => x.map(this.join)) // WTF, sorry.
         let permuted = this._permutations(mapped)
 
+		//console.log(permuted)
         let rhymes = this._getMatches(permuted.map(x => x.split(" ")), options, words)
 
         return rhymes
@@ -86,7 +89,7 @@ export default class Rhymez {
             let doesRhyme = false
             if (options.assonance) wordPronounciations = wordPronounciations.map(x => x.map(this._starConsonants, this), this)
             if (options.isLoose) wordPronounciations = wordPronounciations.map(x => x.map(this._removeNumbers, this), this)
-            if(options.alliteration) {
+			if(options.alliteration) {
                 if (this.activeAlliteration(wordPronounciations[0]).length == soundsToMatch[0].length) {
                     doesRhyme = _.some(wordPronounciations.map(this.activeAlliteration, this), wp => this.rhymeCheck(soundsToMatch, wp))
                     if (doesRhyme) rhymes.push(word)
@@ -138,7 +141,7 @@ export default class Rhymez {
     alliteration(phrase, options) {
         options = options || {}
         options.multiword = false
-        options.loose = false
+        options.isLoose = false
         options.alliteration = true
         phrase = phrase.toUpperCase()
 
@@ -163,7 +166,10 @@ export default class Rhymez {
 
     // Used to loosen up rhymes (may find poor rhymes...)
     _removeNumbers(x) {
-        return x.replace(/[0-9]/ig, "")
+		x = x.replace(/[0-9]/ig, "")
+		x = x.replace("AH","&&")
+		x = x.replace("IY","&&")
+		return x
     }
 
     // Used for assonance
