@@ -10,15 +10,17 @@ suite('Rhymez:', () => {
 		await r.load()
 		console.log('loaded')
 		r.loadRhymes()
-		console.log('loaded rhymes')
-		let a = Array.from(r.rhymes)
-		a = _.sortBy(a, [x => {
-			return x[1].length
-		}])
-		a.reverse()
-		for(var i = 0; i < 100; i++) {
-			console.log(a[i][1][0], a[i][1].length)
-		}
+		r.loadAlliterations()
+		console.log(r.getAlliteration('jubilee'))
+		//console.log('loaded rhymes')
+		//let a = Array.from(r.rhymes)
+		//a = _.sortBy(a, [x => {
+			//return x[1].length
+		//}])
+		//a.reverse()
+		//for(var i = 0; i < 100; i++) {
+			//console.log(a[i][1][0], a[i][1].length)
+		//}
 		//a.forEach(x => {
 			//console.log(x[1][0], x[1].length)
 		//})

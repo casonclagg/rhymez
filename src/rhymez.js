@@ -22,6 +22,7 @@ export default class Rhymez {
         this.options = options || {}
         this.dict = new Map()
 		this.rhymes = new Map()
+		this.alliterations = new Map()
         this.cache = {}
     }
 
@@ -44,6 +45,17 @@ export default class Rhymez {
             })
         })
     }
+	getAlliteration(word) {
+		let pronunciations = this.dict.get(word.toUpperCase())
+		let matches = []
+		for(let pronunciation of pronunciations) {
+			let activeUtterances = this.activeAlliteration(pronunciation)
+			let stringUtterances = activeUtterances.join(' ')
+			let rhymes = this.alliterations.get(stringUtterances)
+			if(rhymes) matches = matches.concat(rhymes)
+		}
+		return matches
+	}
 
 	get(word) {
 		let pronunciations = this.dict.get(word.toUpperCase())
@@ -56,6 +68,24 @@ export default class Rhymez {
 		}
 		return matches
 	}
+
+	loadAlliterations() {
+		for (var [key, value] of this.dict) {
+			for(var pronunciation of value) {
+				let activeUtterances = this.activeAlliteration(pronunciation)
+				let stringUtterances = activeUtterances.join(' ')
+				let pool = this.alliterations.get(stringUtterances)	
+				if(pool) {
+					pool.push(key)
+				} else {
+					pool = [key]
+				}
+				this.alliterations.set(stringUtterances, pool)
+			}
+		}
+	}
+
+
 
 	loadRhymes() {
 		for (var [key, value] of this.dict) {
