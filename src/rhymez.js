@@ -10,10 +10,18 @@ const IS_VOWEL = /^[AEIOU]/i
 // TODO: Speed it up - Pare down search space for subsequent calls, break out of loops early if possible etc...
 // TODO: collapse stars for assonance?  Make it an options maybe...
 
+//Read in all the shit
+//Make grouping dict for perfect rhymes
+//ending rhymes
+//alliteration
+//assonant
+//good assonants
+
 export default class Rhymez {
     constructor(options) {
         this.options = options || {}
         this.dict = new Map()
+		this.rhymes = new Map()
         this.cache = {}
     }
 
@@ -35,6 +43,42 @@ export default class Rhymez {
                 }
             })
         })
+    }
+
+	get(word) {
+		let pronunciations = this.dict.get(word.toUpperCase())
+		let matches = []
+		for(let pronunciation of pronunciations) {
+			let activeUtterances = this.active(pronunciation)
+			let stringUtterances = activeUtterances.join(' ')
+			let rhymes = this.rhymes.get(stringUtterances)
+			if(rhymes) matches = matches.concat(rhymes)
+		}
+		return matches
+	}
+
+	loadRhymes() {
+		for (var [key, value] of this.dict) {
+			for(var pronunciation of value) {
+				let activeUtterances = this.active(pronunciation)
+				let stringUtterances = activeUtterances.join(' ')
+				let pool = this.rhymes.get(stringUtterances)	
+				if(pool) {
+					pool.push(key)
+				} else {
+					pool = [key]
+				}
+				this.rhymes.set(stringUtterances, pool)
+			}
+		}
+	}
+
+    active(ws) {
+        let firstNonConsonant = _.findIndex(ws, w => {
+            return !w.match(IS_CONSONANT)
+        })
+
+        return ws.slice(firstNonConsonant)
     }
 
     pronunciation(word) {
@@ -218,13 +262,6 @@ export default class Rhymez {
 		}
     }
 
-    active(ws) {
-        let firstNonConsonant = _.findIndex(ws, w => {
-            return !w.match(IS_CONSONANT)
-        })
-
-        return ws.slice(firstNonConsonant)
-    }
 
     _permutations(arrayOfArraysOfArrays) {
         if (arrayOfArraysOfArrays.length === 0)
