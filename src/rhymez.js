@@ -3,7 +3,7 @@ import fs from 'fs-extra'
 import _ from 'lodash'
 import lineReader from 'line-reader'
 
-let dictFile = path.join(__dirname, 'data/cmudict.dict')
+let dictFile = path.join(__dirname, 'data/rap.phonemes')
 const IS_CONSONANT = /^[^AEIOU]/i
 const IS_VOWEL = /^[AEIOU]/i
 

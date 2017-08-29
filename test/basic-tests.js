@@ -12,7 +12,18 @@ suite('Rhymez:', () => {
 		r.loadRhymes()
 		console.log('loaded rhymes')
 		let a = Array.from(r.rhymes)
-		console.log(r.get('pay'))
+		a = _.sortBy(a, [x => {
+			return x[1].length
+		}])
+		a.reverse()
+		for(var i = 0; i < 100; i++) {
+			console.log(a[i][1][0], a[i][1].length)
+		}
+		//a.forEach(x => {
+			//console.log(x[1][0], x[1].length)
+		//})
+		//console.log('size', r.rhymes.size)
+		//console.log(r.get('poop'))
 	})
 
 	// TODO - Required and Admired.. Rhymezone owns rhymez at this...
