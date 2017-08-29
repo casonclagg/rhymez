@@ -1,3 +1,5 @@
+// TODO - Output the starting consonants for alliteration matching
+
 # Rhymez
 
 The only rhyming package for node that can rhyme from multiple words and find mutli-word rhymes.

@@ -138,6 +138,23 @@ export default class Rhymez {
         return false
     }
 
+
+    alliterationStart(phrase, options) {
+        options = options || {}
+        options.multiword = false
+        options.isLoose = false
+        options.alliteration = true
+        phrase = phrase.toUpperCase()
+
+        let words = phrase.split(" ")
+        if (_.some(words, x => !this.dict.has(x))) return [] // Doesn't exist in the dictionary
+
+        let mapped = words.map(this.pronunciation, this)
+        mapped[0] = mapped[0].map(this.activeAlliteration) // Remove up to first vowel of first word only
+		return mapped[0][0].join(' ')
+    }
+
+
     alliteration(phrase, options) {
         options = options || {}
         options.multiword = false
@@ -185,16 +202,20 @@ export default class Rhymez {
 
     activeAlliteration(ws) {
         // active rhyming region: slice off the trailing consonants
-        let arr = ws.slice(0)
-        for (var i = arr.length - 1; i > 0; i--) {
-            if (!arr[i].match(IS_CONSONANT)) {
-                break
-            }
-        }
+		try {
+			let arr = ws.slice(0)
+			for (var i = 0; i < arr.length; i++) {
+				if (!arr[i].match(IS_CONSONANT) && i > 0) {
+					break
+				}
+			}
 
-        arr.splice(i + 1)
-
-        return arr
+			arr.splice(i)
+			//console.log(ws, arr)
+			return arr
+		}catch(ex) {
+			console.log(ws, ex)
+		}
     }
 
     active(ws) {
