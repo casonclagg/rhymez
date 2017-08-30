@@ -27,6 +27,7 @@ console.log(rhymes)  // ['MAST', 'BELFAST' ...]
 
 # TODO
 
+0. Remove misspellings etc if possible...
 1. Add assonants
 2. Expand dictionary with words outside of the rap corpus
 3. Get alternate pronunciations somehow (CMU Sphinx just gives one, a good example of when that sucks is with the word `the`.  Say, `thee` and `thuh`.)
