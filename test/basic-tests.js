@@ -11,9 +11,14 @@ before(async () => {
 	await r.load()
 })
 
-test('Finding a fuckload of rhymes takes way less than 3 seconds', () => {
-	r.rhyme('jubilee')
-	//console.log(r.alliteration('jubilee'))
+test('Rhymes probably works', () => {
+	let rhymes = r.rhyme('scrilla')
+	assert.isTrue(_.includes(rhymes, 'KILLA'))
+	rhymes = r.rhyme('window')
+	assert.isTrue(_.includes(rhymes, 'INDOE'))
+	//assert.isFalse(_.includes(rhymes, 'WINDOW'))
+	rhymes = r.rhyme('cheetah')
+	assert.isTrue(_.includes(rhymes, 'RITA'))
 })
 
 // TODO - Required and Admired.. Rhymezone owns rhymez at this...

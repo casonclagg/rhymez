@@ -6,17 +6,31 @@ const IS_VOWEL = /^[AEIOU]/i
 export default {
 	alliterationUtterances,
 	//assonantUtterances,
-	//endRhymeUtterances,
+	endRhymeUtterances,
 	perfectRhymeUtterances
 }
-
 
 function perfectRhymeUtterances(ws) {
 	let firstNonConsonant = _.findIndex(ws, w => {
 		return !w.match(IS_CONSONANT)
 	})
 
-	return ws.slice(firstNonConsonant)
+	return ws.slice(firstNonConsonant).join(' ')
+}
+
+function endRhymeUtterances(ws) {
+	let lastIndex = 0
+	if(_.last(ws).match(IS_CONSONANT)) {
+		lastIndex = _.findLastIndex(ws, w => {
+			return !w.match(IS_CONSONANT)
+		})
+	} else {
+		lastIndex = _.findLastIndex(ws, w => {
+			return !w.match(IS_CONSONANT)
+		})
+	}
+
+	return ws.slice(lastIndex).join(' ')
 }
 
 function alliterationUtterances(ws) {
@@ -28,7 +42,7 @@ function alliterationUtterances(ws) {
 	}
 
 	arr.splice(i)
-	return arr
+	return arr.join(' ')
 }
 
 // Used to loosen up rhymes (may find poor rhymes...)

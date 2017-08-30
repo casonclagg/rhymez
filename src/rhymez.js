@@ -15,6 +15,7 @@ export default class Rhymez {
         this.options = options || {}
         this.dict = new Map()
 		this.rhymeMap = new Map()
+		this.endRhymeMap = new Map()
 		this.alliterationMap = new Map()
     }
 
@@ -33,6 +34,7 @@ export default class Rhymez {
 
 					if (last) {
 						this.loadRhymes()
+						this.loadEndRhymes()
 						this.loadAlliterations()
                         return resolve(this.dict)
 					}
@@ -51,8 +53,7 @@ export default class Rhymez {
 		let matches = []
 		for(let pronunciation of pronunciations) {
 			let activeUtterances = utteranceUtil.alliterationUtterances(pronunciation)
-			let stringUtterances = activeUtterances.join(' ')
-			let rhymes = this.alliterationMap.get(stringUtterances)
+			let rhymes = this.alliterationMap.get(activeUtterances)
 			if(rhymes) matches = matches.concat(rhymes)
 		}
 		return matches
@@ -63,8 +64,7 @@ export default class Rhymez {
 		let matches = []
 		for(let pronunciation of pronunciations) {
 			let activeUtterances = utteranceUtil.perfectRhymeUtterances(pronunciation)
-			let stringUtterances = activeUtterances.join(' ')
-			let rhymes = this.rhymeMap.get(stringUtterances)
+			let rhymes = this.rhymeMap.get(activeUtterances)
 			if(rhymes) matches = matches.concat(rhymes)
 		}
 		return matches
@@ -74,14 +74,13 @@ export default class Rhymez {
 		for (var [key, value] of this.dict) {
 			for(var pronunciation of value) {
 				let activeUtterances = utteranceUtil.alliterationUtterances(pronunciation)
-				let stringUtterances = activeUtterances.join(' ')
-				let pool = this.alliterationMap.get(stringUtterances)	
+				let pool = this.alliterationMap.get(activeUtterances)	
 				if(pool) {
 					pool.push(key)
 				} else {
 					pool = [key]
 				}
-				this.alliterationMap.set(stringUtterances, pool)
+				this.alliterationMap.set(activeUtterances, pool)
 			}
 		}
 	}
@@ -90,14 +89,28 @@ export default class Rhymez {
 		for (var [key, value] of this.dict) {
 			for(var pronunciation of value) {
 				let activeUtterances = utteranceUtil.perfectRhymeUtterances(pronunciation)
-				let stringUtterances = activeUtterances.join(' ')
-				let pool = this.rhymeMap.get(stringUtterances)	
+				let pool = this.rhymeMap.get(activeUtterances)	
 				if(pool) {
 					pool.push(key)
 				} else {
 					pool = [key]
 				}
-				this.rhymeMap.set(stringUtterances, pool)
+				this.rhymeMap.set(activeUtterances, pool)
+			}
+		}
+	}
+	
+	loadEndRhymes() {
+		for (var [key, value] of this.dict) {
+			for(var pronunciation of value) {
+				let activeUtterances = utteranceUtil.endRhymeUtterances(pronunciation)
+				let pool = this.endRhymeMap.get(activeUtterances)	
+				if(pool) {
+					pool.push(key)
+				} else {
+					pool = [key]
+				}
+				this.endRhymeMap.set(activeUtterances, pool)
 			}
 		}
 	}
