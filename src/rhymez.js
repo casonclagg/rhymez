@@ -8,43 +8,65 @@ let dictFile = path.join(__dirname, 'data/rap.phonemes')
 
 
 // TODO: collapse stars for assonance?  Make it an options maybe...
+// TODO: Add Assonance
+// TODO: Loosen up rhymes (AH/IY -> &&)
+// TODO: Multirhymes
 
 export default class Rhymez {
 
-    constructor(options) {
-        this.options = options || {}
-        this.dict = new Map()
+	constructor(options) {
+		this.options = options || {}
+		this.dict = new Map()
 		this.rhymeMap = new Map()
 		this.endRhymeMap = new Map()
 		this.alliterationMap = new Map()
-    }
+	}
 
-    load(file) {
-        return new Promise((resolve, reject) => {
-            lineReader.eachLine(file || dictFile, (line, last) => {
-                if (line.match(/^[A-Z]/i)) {
-                    var words = line.split(/\s+/)
-                    var word = words[0].replace(/\(\d+\)$/, '').toUpperCase()
+	load(file) {
+		return new Promise((resolve, reject) => {
+			lineReader.eachLine(file || dictFile, (line, last) => {
+				if (line.match(/^[A-Z]/i)) {
+					var words = line.split(/\s+/)
+					var word = words[0].replace(/\(\d+\)$/, '').toUpperCase()
 
-                    if (!this.dict.has(word)) {
-                        this.dict.set(word, [])
-                    }
+					if (!this.dict.has(word)) {
+						this.dict.set(word, [])
+					}
 
-                    this.dict.get(word).push(words.slice(1))
+					this.dict.get(word).push(words.slice(1))
 
 					if (last) {
 						this.loadRhymes()
 						this.loadEndRhymes()
 						this.loadAlliterations()
-                        return resolve(this.dict)
+						return resolve(this.dict)
 					}
 				}
-            })
-        })
+			})
+		})
+	}
+
+	// =_(
+	permutations(arrayOfArraysOfArrays) {
+        if (arrayOfArraysOfArrays.length === 0)
+            return []
+        if (arrayOfArraysOfArrays.length === 1)
+            return arrayOfArraysOfArrays[0]
+        var result = [];
+        var allCasesOfRest = this.permutations(arrayOfArraysOfArrays.slice(1))
+        for (var c in allCasesOfRest) {
+            for (var i = 0; i < arrayOfArraysOfArrays[0].length; i++) {
+                let thing = arrayOfArraysOfArrays[0][i].join(' ') + " " + (allCasesOfRest[c].join(' '))
+                result.push(thing)
+            }
+        }
+		return result.map(x=> x.split(' '))
     }
 
 	getPronunciations(word) {
-		let pronunciations = this.dict.get(word.toUpperCase())
+		let words = word.split(' ')
+		let wordsPronunciations = words.map(w => this.dict.get(w.toUpperCase()))
+		let pronunciations = this.permutations(wordsPronunciations)
 		return pronunciations
 	}
 
@@ -56,6 +78,9 @@ export default class Rhymez {
 			let rhymes = this.alliterationMap.get(activeUtterances)
 			if(rhymes) matches = matches.concat(rhymes)
 		}
+		matches = matches.filter(x => {
+			return !this.hasSameUtterances(x, word)
+		})
 		return matches
 	}
 
@@ -65,6 +90,20 @@ export default class Rhymez {
 		for(let pronunciation of pronunciations) {
 			let activeUtterances = utteranceUtil.perfectRhymeUtterances(pronunciation)
 			let rhymes = this.rhymeMap.get(activeUtterances)
+			if(rhymes) matches = matches.concat(rhymes)
+		}
+		matches = matches.filter(x => {
+			return !this.hasSameUtterances(x, word)
+		})
+		return matches
+	}
+
+	endRhyme(word) {
+		let pronunciations = this.getPronunciations(word)
+		let matches = []
+		for(let pronunciation of pronunciations) {
+			let activeUtterances = utteranceUtil.endRhymeUtterances(pronunciation)
+			let rhymes = this.endRhymeMap.get(activeUtterances)
 			if(rhymes) matches = matches.concat(rhymes)
 		}
 		matches = matches.filter(x => {
@@ -115,7 +154,7 @@ export default class Rhymez {
 			}
 		}
 	}
-	
+
 	loadEndRhymes() {
 		for (var [key, value] of this.dict) {
 			for(var pronunciation of value) {
@@ -131,7 +170,7 @@ export default class Rhymez {
 		}
 	}
 
-    pronunciation(word) {
-        return this.dict.get(word.toUpperCase())
-    }
+	pronunciation(word) {
+		return this.dict.get(word.toUpperCase())
+	}
 }

@@ -11,7 +11,15 @@ before(async () => {
 	await r.load()
 })
 
-test('Rhymes probably works', () => {
+test('getPronunciations can handle single words', () => {
+	let pronunciations = r.getPronunciations('scrilla')
+})
+
+test('getPronunciations can handle multiple words', () => {
+	let pronunciations = r.getPronunciations('pay day')
+})
+
+test('Rhymes probably work', () => {
 	let rhymes = r.rhyme('scrilla')
 	assert.isTrue(_.includes(rhymes, 'KILLA'))
 	rhymes = r.rhyme('window')
@@ -20,6 +28,37 @@ test('Rhymes probably works', () => {
 	rhymes = r.rhyme('cheetah')
 	assert.isTrue(_.includes(rhymes, 'RITA'))
 })
+
+test('Multiword Rhyming works', () => {
+	let rhymes = r.rhyme('pay day')
+	assert.isTrue(_.includes(rhymes, 'HEYDAY'))
+	assert.isTrue(_.includes(rhymes, 'MAYDAY'))
+})
+
+test('Alliteration probably works', () => {
+	let alliterations = r.alliteration('scrilla')
+	assert.isTrue(_.includes(alliterations, 'SCRATCH'))
+	alliterations = r.alliteration('window')
+	assert.isTrue(_.includes(alliterations, 'WIPER'))
+	assert.isFalse(_.includes(alliterations, 'WHORE'))
+	assert.isFalse(_.includes(alliterations, 'WINDOW'))
+	alliterations = r.alliteration('cheetah')
+	assert.isTrue(_.includes(alliterations, 'CHILD'))
+})
+
+test('End Rhymes probably work', () => {
+	let rhymes = r.endRhyme('scrilla')
+	assert.isTrue(_.includes(rhymes, 'HELLA'))
+	rhymes = r.endRhyme('common')
+	assert.isTrue(_.includes(rhymes, 'BUTTON'))
+	assert.isTrue(_.includes(rhymes, 'LEMON'))
+	assert.isFalse(_.includes(rhymes, 'COMMON'))
+	rhymes = r.endRhyme('HellCat')
+	assert.isTrue(_.includes(rhymes, 'ARISTOCRAT'))
+	assert.isTrue(_.includes(rhymes, 'SLAT'))
+	assert.isTrue(_.includes(rhymes, 'PUSSYCAT'))
+})
+
 
 // TODO - Required and Admired.. Rhymezone owns rhymez at this...
 //Directory Broke Multirhymes
