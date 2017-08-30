@@ -2,243 +2,175 @@ import path from 'path'
 import fs from 'fs-extra'
 import _ from 'lodash'
 import lineReader from 'line-reader'
+import utteranceUtil from './utterance-util'
 
-let dictFile = path.join(__dirname, 'data/cmudict.dict')
-const IS_CONSONANT = /^[^AEIOU]/i
-const IS_VOWEL = /^[AEIOU]/i
+let dictFile = path.join(__dirname, 'data/rap.phonemes')
 
-// TODO: Speed it up - Pare down search space for subsequent calls, break out of loops early if possible etc...
+
 // TODO: collapse stars for assonance?  Make it an options maybe...
+// TODO: Add Assonance
+// TODO: Loosen up rhymes (AH/IY -> &&)
+// TODO: Multirhymes
 
 export default class Rhymez {
-    constructor(options) {
-        this.options = options || {}
-        this.dict = new Map()
-        this.cache = {}
-    }
 
-    load(file) {
-        return new Promise((resolve, reject) => {
-            lineReader.eachLine(file || dictFile, (line, last) => {
-                if (line.match(/^[A-Z]/i)) {
-                    var words = line.split(/\s+/)
-                    var word = words[0].replace(/\(\d+\)$/, '').toUpperCase()
+	constructor(options) {
+		this.options = options || {}
+		this.dict = new Map()
+		this.rhymeMap = new Map()
+		this.endRhymeMap = new Map()
+		this.alliterationMap = new Map()
+	}
 
-                    if (!this.dict.has(word)) {
-                        this.dict.set(word, [])
-                    }
+	load(file) {
+		return new Promise((resolve, reject) => {
+			lineReader.eachLine(file || dictFile, (line, last) => {
+				if (line.match(/^[A-Z]/i)) {
+					var words = line.split(/\s+/)
+					var word = words[0].replace(/\(\d+\)$/, '').toUpperCase()
 
-                    this.dict.get(word).push(words.slice(1))
+					if (!this.dict.has(word)) {
+						this.dict.set(word, [])
+					}
 
-                    if (last)
-                        return resolve(this.dict)
-                }
-            })
-        })
-    }
+					this.dict.get(word).push(words.slice(1))
 
-    pronunciation(word) {
-        return this.dict.get(word.toUpperCase())
-    }
-
-    rhyme(phrase, options) {
-        options = options || {}
-        phrase = phrase.toUpperCase()
-        let words = phrase.split(" ")
-        if (_.some(words, x => !this.dict.has(x)))
-		{
-            return [] // Doesn't exist in the dictionary
-		}
-		let mapped = words.map(this.pronunciation, this)
-        mapped[0] = mapped[0].map(this.active) // Remove up to first vowel of first word only
-        mapped = mapped.map(x => x.map(this.join)) // WTF, sorry.
-        let permuted = this._permutations(mapped)
-
-		//console.log(permuted)
-        let rhymes = this._getMatches(permuted.map(x => x.split(" ")), options, words)
-
-        return rhymes
-    }
-
-    // This is terrible, I'm sorry.
-    _optsToString(options) {
-        let entries = _.entries(options)
-        entries = entries.filter(x => x[1] == true)
-        let x = entries.map(x => x[0]).join("-")
-        return x
-    }
-
-    // =(
-    _getMatches(soundsToMatch, options, words) {
-        if (this.cache[soundsToMatch.join(" ") + this._optsToString(options)]) {
-            return this.cache[soundsToMatch.join(" ") + this._optsToString(options)]
-        }
-
-        let rhymes = []
-        if (soundsToMatch[0].length == 0) return []
-
-        if (options.assonance) {
-            soundsToMatch = soundsToMatch.map(x => x.map(this._starConsonants, this), this)
-        }
-        if (options.isLoose) {
-            soundsToMatch = soundsToMatch.map(x => x.map(this._removeNumbers, this), this)
-        }
-
-        for (let [word, wordPronounciations] of this.dict.entries()) {
-            if (_.includes(words, word.toUpperCase())) continue
-            let doesRhyme = false
-            if (options.assonance) wordPronounciations = wordPronounciations.map(x => x.map(this._starConsonants, this), this)
-            if (options.isLoose) wordPronounciations = wordPronounciations.map(x => x.map(this._removeNumbers, this), this)
-			if(options.alliteration) {
-                if (this.activeAlliteration(wordPronounciations[0]).length == soundsToMatch[0].length) {
-                    doesRhyme = _.some(wordPronounciations.map(this.activeAlliteration, this), wp => this.rhymeCheck(soundsToMatch, wp))
-                    if (doesRhyme) rhymes.push(word)
-                }
-            } else {
-                if (this.active(wordPronounciations[0]).length == soundsToMatch[0].length) {
-                    doesRhyme = _.some(wordPronounciations.map(this.active, this), wp => this.rhymeCheck(soundsToMatch, wp))
-                    if (doesRhyme) rhymes.push(word)
-                } else if (options.multiword) {
-                    // Partial rhymes, use whole pronunciation, not just this.active(pronunciation)
-                    doesRhyme = _.some(wordPronounciations, wp => this.rhymeCheck(soundsToMatch, wp))
-                    if (doesRhyme) {
-                        let remainderToMatch = soundsToMatch.map(x => {
-                            return x.slice(0, soundsToMatch.length - wordPronounciations[0].length - 1)
-                        })
-
-                        let addons = this._getMatches(remainderToMatch, options)
-
-                        addons = addons.map(a => a + " " + word)
-                        rhymes = rhymes.concat(addons)
-                    }
-                }
-            }
-        }
-        this.cache[soundsToMatch.join(" ") + this._optsToString(options)] = rhymes
-        return rhymes
-    }
-
-    // This works now...
-    rhymeCheck(permuted, activePart) {
-        if (!activePart || activePart.length === 0)
-            return false
-
-        for (let x of permuted) {
-            if (activePart.length > x.length)
-                continue
-            for (let y = x.length - 1; y >= 0; y--) {
-                let activePartIndex = activePart.length - ((x.length - 1) - y) - 1
-                if (x[y] != activePart[activePartIndex]) {
-                    break
-                }
-                if (activePartIndex == 0)
-                    return true
-            }
-        }
-        return false
-    }
-
-
-    alliterationStart(phrase, options) {
-        options = options || {}
-        options.multiword = false
-        options.isLoose = false
-        options.alliteration = true
-        phrase = phrase.toUpperCase()
-
-        let words = phrase.split(" ")
-        if (_.some(words, x => !this.dict.has(x))) return [] // Doesn't exist in the dictionary
-
-        let mapped = words.map(this.pronunciation, this)
-        mapped[0] = mapped[0].map(this.activeAlliteration) // Remove up to first vowel of first word only
-		return mapped[0][0].join(' ')
-    }
-
-
-    alliteration(phrase, options) {
-        options = options || {}
-        options.multiword = false
-        options.isLoose = false
-        options.alliteration = true
-        phrase = phrase.toUpperCase()
-
-        let words = phrase.split(" ")
-        if (_.some(words, x => !this.dict.has(x))) return [] // Doesn't exist in the dictionary
-
-        let mapped = words.map(this.pronunciation, this)
-        mapped[0] = mapped[0].map(this.activeAlliteration) // Remove up to first vowel of first word only
-        mapped = mapped.map(x => x.map(this.join)) // WTF, sorry.
-        let permuted = this._permutations(mapped)
-
-        let alliterations = this._getMatches(permuted.map(x => x.split(" ")), options, words)
-
-        return alliterations
-    }
-
-    assonance(phrase, options) {
-        options = options || {}
-        options.assonance = true
-        return this.rhyme(phrase, options)
-    }
-
-    // Used to loosen up rhymes (may find poor rhymes...)
-    _removeNumbers(x) {
-		x = x.replace(/[0-9]/ig, "")
-		x = x.replace("AH","&&")
-		x = x.replace("IY","&&")
-		return x
-    }
-
-    // Used for assonance
-    _starConsonants(x) {
-        return x.replace(/(\s|^)([BCDFGHJKLMNPQRSTVWXYZ](\s|$))/ig, (all, a, b, c) => {
-            return `${a}*${c}`
-        })
-    }
-
-    join(ws) {
-        return ws.join(' ')
-    }
-
-    activeAlliteration(ws) {
-        // active rhyming region: slice off the trailing consonants
-		try {
-			let arr = ws.slice(0)
-			for (var i = 0; i < arr.length; i++) {
-				if (!arr[i].match(IS_CONSONANT) && i > 0) {
-					break
+					if (last) {
+						this.loadRhymes()
+						this.loadEndRhymes()
+						this.loadAlliterations()
+						return resolve(this.dict)
+					}
 				}
-			}
+			})
+		})
+	}
 
-			arr.splice(i)
-			//console.log(ws, arr)
-			return arr
-		}catch(ex) {
-			console.log(ws, ex)
-		}
-    }
-
-    active(ws) {
-        let firstNonConsonant = _.findIndex(ws, w => {
-            return !w.match(IS_CONSONANT)
-        })
-
-        return ws.slice(firstNonConsonant)
-    }
-
-    _permutations(arrayOfArraysOfArrays) {
+	// =_(
+	permutations(arrayOfArraysOfArrays) {
         if (arrayOfArraysOfArrays.length === 0)
             return []
         if (arrayOfArraysOfArrays.length === 1)
             return arrayOfArraysOfArrays[0]
         var result = [];
-        var allCasesOfRest = this._permutations(arrayOfArraysOfArrays.slice(1))
+        var allCasesOfRest = this.permutations(arrayOfArraysOfArrays.slice(1))
         for (var c in allCasesOfRest) {
             for (var i = 0; i < arrayOfArraysOfArrays[0].length; i++) {
-                let thing = arrayOfArraysOfArrays[0][i] + " " + (allCasesOfRest[c])
+                let thing = arrayOfArraysOfArrays[0][i].join(' ') + " " + (allCasesOfRest[c].join(' '))
                 result.push(thing)
             }
         }
-        return result
+		return result.map(x=> x.split(' '))
     }
+
+	getPronunciations(word) {
+		let words = word.split(' ')
+		let wordsPronunciations = words.map(w => this.dict.get(w.toUpperCase()))
+		let pronunciations = this.permutations(wordsPronunciations)
+		return pronunciations
+	}
+
+	alliteration(word) {
+		let pronunciations = this.getPronunciations(word)
+		let matches = []
+		for(let pronunciation of pronunciations) {
+			let activeUtterances = utteranceUtil.alliterationUtterances(pronunciation)
+			let rhymes = this.alliterationMap.get(activeUtterances)
+			if(rhymes) matches = matches.concat(rhymes)
+		}
+		matches = matches.filter(x => {
+			return !this.hasSameUtterances(x, word)
+		})
+		return matches
+	}
+
+	rhyme(word) {
+		let pronunciations = this.getPronunciations(word)
+		let matches = []
+		for(let pronunciation of pronunciations) {
+			let activeUtterances = utteranceUtil.perfectRhymeUtterances(pronunciation)
+			let rhymes = this.rhymeMap.get(activeUtterances)
+			if(rhymes) matches = matches.concat(rhymes)
+		}
+		matches = matches.filter(x => {
+			return !this.hasSameUtterances(x, word)
+		})
+		return matches
+	}
+
+	endRhyme(word) {
+		let pronunciations = this.getPronunciations(word)
+		let matches = []
+		for(let pronunciation of pronunciations) {
+			let activeUtterances = utteranceUtil.endRhymeUtterances(pronunciation)
+			let rhymes = this.endRhymeMap.get(activeUtterances)
+			if(rhymes) matches = matches.concat(rhymes)
+		}
+		matches = matches.filter(x => {
+			return !this.hasSameUtterances(x, word)
+		})
+		return matches
+	}
+
+	hasSameUtterances(word1, word2) {
+		let pronunciations1 = this.getPronunciations(word1)
+		let pronunciations2 = this.getPronunciations(word2)
+		for(let pronunciation1 of pronunciations1) {
+			for(let pronunciation2 of pronunciations2) {
+				if(pronunciation1.join(' ') == pronunciation2.join(' ')) {
+					return true
+				}
+			}	
+		}
+		return false
+	}
+
+	loadAlliterations() {
+		for (var [key, value] of this.dict) {
+			for(var pronunciation of value) {
+				let activeUtterances = utteranceUtil.alliterationUtterances(pronunciation)
+				let pool = this.alliterationMap.get(activeUtterances)	
+				if(pool) {
+					pool.push(key)
+				} else {
+					pool = [key]
+				}
+				this.alliterationMap.set(activeUtterances, pool)
+			}
+		}
+	}
+
+	loadRhymes() {
+		for (var [key, value] of this.dict) {
+			for(var pronunciation of value) {
+				let activeUtterances = utteranceUtil.perfectRhymeUtterances(pronunciation)
+				let pool = this.rhymeMap.get(activeUtterances)	
+				if(pool) {
+					pool.push(key)
+				} else {
+					pool = [key]
+				}
+				this.rhymeMap.set(activeUtterances, pool)
+			}
+		}
+	}
+
+	loadEndRhymes() {
+		for (var [key, value] of this.dict) {
+			for(var pronunciation of value) {
+				let activeUtterances = utteranceUtil.endRhymeUtterances(pronunciation)
+				let pool = this.endRhymeMap.get(activeUtterances)	
+				if(pool) {
+					pool.push(key)
+				} else {
+					pool = [key]
+				}
+				this.endRhymeMap.set(activeUtterances, pool)
+			}
+		}
+	}
+
+	pronunciation(word) {
+		return this.dict.get(word.toUpperCase())
+	}
 }
