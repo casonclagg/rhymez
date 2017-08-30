@@ -16,7 +16,7 @@ test('Rhymes probably works', () => {
 	assert.isTrue(_.includes(rhymes, 'KILLA'))
 	rhymes = r.rhyme('window')
 	assert.isTrue(_.includes(rhymes, 'INDOE'))
-	//assert.isFalse(_.includes(rhymes, 'WINDOW'))
+	assert.isFalse(_.includes(rhymes, 'WINDOW'))
 	rhymes = r.rhyme('cheetah')
 	assert.isTrue(_.includes(rhymes, 'RITA'))
 })

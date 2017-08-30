@@ -67,7 +67,23 @@ export default class Rhymez {
 			let rhymes = this.rhymeMap.get(activeUtterances)
 			if(rhymes) matches = matches.concat(rhymes)
 		}
+		matches = matches.filter(x => {
+			return !this.hasSameUtterances(x, word)
+		})
 		return matches
+	}
+
+	hasSameUtterances(word1, word2) {
+		let pronunciations1 = this.getPronunciations(word1)
+		let pronunciations2 = this.getPronunciations(word2)
+		for(let pronunciation1 of pronunciations1) {
+			for(let pronunciation2 of pronunciations2) {
+				if(pronunciation1.join(' ') == pronunciation2.join(' ')) {
+					return true
+				}
+			}	
+		}
+		return false
 	}
 
 	loadAlliterations() {
