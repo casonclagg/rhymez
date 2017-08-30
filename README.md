@@ -1,12 +1,6 @@
-// TODO - Output the starting consonants for alliteration matching
-
 # Rhymez
 
-The only rhyming package for node that can rhyme from multiple words and find mutli-word rhymes.
-
-Also includes **assonance**!
-
-Note: Its significantly slower when searching multiple word rhymes.
+Find perfect rhymes, alliterations, and end rhymes.  Uses a much larger phoneme list than the standard cmudict that was built using g2p-seq2seq and the CMU Sphinx neural net.  The words it was trained on were pulled from every rap lyric ever.
 
 #### Usage
 
@@ -20,17 +14,21 @@ import Rhymez from 'rhymez'
 let rhymez = new Rhymez()
 await rhymez.load()
 
-
-// Defaults
-let options = {
-  isLoose: false, // Ignore vowel sound differences (EH1 and EH2 are considered identical)
-  assonance: false, // Ignore consonants
-  multiword: false  
-}
-
-let rhymes = rhymez.rhyme('test', options)
+let rhymes = rhymez.rhyme('test')
 console.log(rhymes)  // ['BEST', 'REST' ...]
 
-let pronunciation = rhymez.pronunciation('test')
-console.log(pronunciation)  // ['T', 'EH1', 'S', 'T']
+let rhymes = rhymez.alliteration('test')
+console.log(rhymes)  // ['TABLET', 'TENT' ...]
+
+let rhymes = rhymez.endRhyme('Breakfast')
+console.log(rhymes)  // ['MAST', 'BELFAST' ...]
+
 ```
+
+# TODO
+
+1. Add assonants
+2. Expand dictionary with words outside of the rap corpus
+3. Get alternate pronunciations somehow (CMU Sphinx just gives one, a good example of when that sucks is with the word `the`.  Say, `thee` and `thuh`.)
+4. Allow for looser rhymes
+5. Enable some common rhyme tactics, like `bigger -> bigga` and `coding -> codin` and `thriller -> thrilla` 

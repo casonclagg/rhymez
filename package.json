@@ -1,7 +1,7 @@
 {
   "name": "rhymez",
-  "description": "The only rhyming package for node that can rhyme from multiple words and find mutli-word rhymes with assonance!",
-  "version": "1.0.6",
+  "description": "Find perfect rhymes, alliterations, and end rhymes.  Uses a much larger phoneme list than the standard cmudict that was built using g2p-seq2seq and the CMU Sphinx neural net.  The words it was trained on were pulled from every rap lyric ever.",
+  "version": "2.0.1",
   "main": "./lib/rhymez.js",
   "devDependencies": {
     "babel-cli": "^6.2.4",
