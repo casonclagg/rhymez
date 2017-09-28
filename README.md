@@ -12,7 +12,6 @@ npm install -S rhymez
 
 import Rhymez from 'rhymez'
 let rhymez = new Rhymez()
-await rhymez.load()
 
 let rhymes = rhymez.rhyme('test')
 console.log(rhymes)  // ['BEST', 'REST' ...]
