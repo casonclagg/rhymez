@@ -20,29 +20,28 @@ export default class Rhymez {
 		this.rhymeMap = new Map()
 		this.endRhymeMap = new Map()
 		this.alliterationMap = new Map()
+		let contents = fs.readFileSync(this.options.file || dictFile, 'utf8');
+		this.load(contents)
+
+		this.loadRhymes()
+		this.loadEndRhymes()
+		this.loadAlliterations()
 	}
 
-	load(file) {
-		return new Promise((resolve, reject) => {
-			lineReader.eachLine(file || dictFile, (line, last) => {
-				if (line.match(/^[A-Z]/i)) {
-					var words = line.split(/\s+/)
-					var word = words[0].replace(/\(\d+\)$/, '').toUpperCase()
+	// Change this to not be async... its fuckin shit up
+	load(fileContents) {
+		let lines = fileContents.split(/\r?\n/)
+		lines.forEach(line => {
+			if (line.match(/^[A-Z]/i)) {
+				var words = line.split(/\s+/)
+				var word = words[0].replace(/\(\d+\)$/, '').toUpperCase()
 
-					if (!this.dict.has(word)) {
-						this.dict.set(word, [])
-					}
-
-					this.dict.get(word).push(words.slice(1))
-
-					if (last) {
-						this.loadRhymes()
-						this.loadEndRhymes()
-						this.loadAlliterations()
-						return resolve(this.dict)
-					}
+				if (!this.dict.has(word)) {
+					this.dict.set(word, [])
 				}
-			})
+
+				this.dict.get(word).push(words.slice(1))
+			}
 		})
 	}
 

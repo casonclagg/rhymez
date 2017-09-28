@@ -8,7 +8,7 @@ let r = new Rhymez()
 suite('Rhymez')
 
 before(async () => {
-	await r.load()
+	//await r.load()
 })
 
 test('getPronunciations can handle single words', () => {
