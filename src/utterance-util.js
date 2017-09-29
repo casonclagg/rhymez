@@ -5,7 +5,7 @@ const IS_VOWEL = /^[AEIOU]/i
 
 export default {
 	alliterationUtterances,
-	//assonantUtterances,
+	assonantUtterances,
 	endRhymeUtterances,
 	perfectRhymeUtterances
 }
@@ -16,6 +16,13 @@ function perfectRhymeUtterances(ws) {
 	})
 
 	return ws.slice(firstNonConsonant).join(' ')
+}
+
+function assonantUtterances(ws) {
+	let firstNonConsonant = _.findIndex(ws, w => {
+		return !w.match(IS_CONSONANT)
+	})
+	return starConsonants(ws.slice(firstNonConsonant).join(' '))
 }
 
 function endRhymeUtterances(ws) {

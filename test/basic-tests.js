@@ -29,6 +29,14 @@ test('Rhymes probably work', () => {
 	assert.isTrue(_.includes(rhymes, 'RITA'))
 })
 
+test('Assonance likely works', () => {
+	let rhymes = r.assonance('hype')
+	assert.isTrue(_.includes(rhymes, 'NIGHT'))
+	rhymes = r.assonance('Cat')
+	assert.isTrue(_.includes(rhymes, 'RAN'))
+	assert.isFalse(_.includes(rhymes, 'BAKE'))
+})
+
 test('Multiword Rhyming works', () => {
 	let rhymes = r.rhyme('pay day')
 	assert.isTrue(_.includes(rhymes, 'HEYDAY'))

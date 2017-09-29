@@ -6,17 +6,15 @@ import utteranceUtil from './utterance-util'
 
 let dictFile = path.join(__dirname, 'data/rap.phonemes')
 
-
 // TODO: collapse stars for assonance?  Make it an options maybe...
-// TODO: Add Assonance
 // TODO: Loosen up rhymes (AH/IY -> &&)
-// TODO: Multirhymes
 
 export default class Rhymez {
 
 	constructor(options) {
 		this.options = options || {}
 		this.dict = new Map()
+		this.assonanceMap = new Map()
 		this.rhymeMap = new Map()
 		this.endRhymeMap = new Map()
 		this.alliterationMap = new Map()
@@ -25,10 +23,10 @@ export default class Rhymez {
 
 		this.loadRhymes()
 		this.loadEndRhymes()
+		this.loadAssonance()
 		this.loadAlliterations()
 	}
 
-	// Change this to not be async... its fuckin shit up
 	load(fileContents) {
 		let lines = fileContents.split(/\r?\n/)
 		lines.forEach(line => {
@@ -127,6 +125,25 @@ export default class Rhymez {
 		}
 	}
 
+	assonance(word) {
+		if(!word) return null
+		try {
+			let pronunciations = this.getPronunciations(word)
+			let matches = []
+			for(let pronunciation of pronunciations) {
+				let activeUtterances = utteranceUtil.assonantUtterances(pronunciation)
+				let rhymes = this.assonanceMap.get(activeUtterances)
+				if(rhymes) matches = matches.concat(rhymes)
+			}
+			matches = matches.filter(x => {
+				return !this.hasSameUtterances(x, word)
+			})
+			return matches
+		} catch(ex) {
+			return null
+		}
+	}
+
 	hasSameUtterances(word1, word2) {
 		let pronunciations1 = this.getPronunciations(word1)
 		let pronunciations2 = this.getPronunciations(word2)
@@ -138,6 +155,21 @@ export default class Rhymez {
 			}	
 		}
 		return false
+	}
+
+	loadAssonance() {
+		for (var [key, value] of this.dict) {
+			for(var pronunciation of value) {
+				let activeUtterances = utteranceUtil.assonantUtterances(pronunciation)
+				let pool = this.assonanceMap.get(activeUtterances)	
+				if(pool) {
+					pool.push(key)
+				} else {
+					pool = [key]
+				}
+				this.assonanceMap.set(activeUtterances, pool)
+			}
+		}
 	}
 
 	loadAlliterations() {
