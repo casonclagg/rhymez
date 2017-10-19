@@ -1,15 +1,13 @@
-import Rhymez from '../src/rhymez';
+import Rhymez from '../src/rhymez'
 import _ from 'lodash'
-import {
-	assert
-} from 'chai'
+import { assert } from 'chai'
+import present from 'present'
+
 let r = new Rhymez()
 
 suite('Rhymez')
 
-before(async () => {
-	//await r.load()
-})
+before(async () => {})
 
 test('getPronunciations can handle single words', () => {
 	let pronunciations = r.getPronunciations('scrilla')
@@ -17,6 +15,33 @@ test('getPronunciations can handle single words', () => {
 
 test('getPronunciations can handle multiple words', () => {
 	let pronunciations = r.getPronunciations('pay day')
+})
+
+test('Rhymes is fast?', () => {
+	let words = [
+		'scrilla',
+		'dough',
+		'day',
+		'test',
+		'air',
+		'flow',
+		'key',
+		'kilo',
+		'floor',
+		'desk',
+		'ramp',
+		'screen',
+		'transformer',
+		'computer',
+		'banana',
+	]
+	var t0 = present()
+	for (var i = 0; i < 100; i++) {
+		let rhymes = r.rhyme(_.sample(words))
+	}
+	var t1 = present()
+
+	assert.isBelow(t1 - t0, 120, 'under 1ms per search fail')
 })
 
 test('Rhymes probably work', () => {
@@ -66,7 +91,6 @@ test('End Rhymes probably work', () => {
 	assert.isTrue(_.includes(rhymes, 'SLAT'))
 	assert.isTrue(_.includes(rhymes, 'PUSSYCAT'))
 })
-
 
 // TODO - Required and Admired.. Rhymezone owns rhymez at this...
 //Directory Broke Multirhymes
