@@ -7,7 +7,7 @@ export default {
 	alliterationUtterances,
 	assonantUtterances,
 	endRhymeUtterances,
-	perfectRhymeUtterances
+	perfectRhymeUtterances,
 }
 
 function perfectRhymeUtterances(ws) {
@@ -27,7 +27,7 @@ function assonantUtterances(ws) {
 
 function endRhymeUtterances(ws) {
 	let lastIndex = 0
-	if(_.last(ws).match(IS_CONSONANT)) {
+	if (_.last(ws).match(IS_CONSONANT)) {
 		lastIndex = _.findLastIndex(ws, w => {
 			return !w.match(IS_CONSONANT)
 		})
@@ -42,28 +42,28 @@ function endRhymeUtterances(ws) {
 
 function alliterationUtterances(ws) {
 	let arr = ws.slice(0)
+
 	for (var i = 0; i < arr.length; i++) {
 		if (!arr[i].match(IS_CONSONANT) && i > 0) {
 			break
 		}
 	}
 
-	arr.splice(i)
+	arr.splice(i + 1)
 	return arr.join(' ')
 }
 
 // Used to loosen up rhymes (may find poor rhymes...)
 function removeNumbers(x) {
-	x = x.replace(/[0-9]/ig, "")
-	x = x.replace("AH","&&")
-	x = x.replace("IY","&&")
+	x = x.replace(/[0-9]/gi, '')
+	x = x.replace('AH', '&&')
+	x = x.replace('IY', '&&')
 	return x
 }
 
 // Used for assonance
 function starConsonants(x) {
-	return x.replace(/(\s|^)([BCDFGHJKLMNPQRSTVWXYZ](\s|$))/ig, (all, a, b, c) => {
+	return x.replace(/(\s|^)([BCDFGHJKLMNPQRSTVWXYZ](\s|$))/gi, (all, a, b, c) => {
 		return `${a}*${c}`
 	})
 }
-

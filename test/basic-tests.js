@@ -44,11 +44,38 @@ test('Rhymes is fast?', () => {
 	assert.isBelow(t1 - t0, 120, 'under 1ms per search fail')
 })
 
+test('Alliteration is fast?', () => {
+	let words = [
+		'scrilla',
+		'dough',
+		'day',
+		'test',
+		'air',
+		'flow',
+		'kilo',
+		'floor',
+		'idiot',
+		'ramp',
+		'screen',
+		'transformer',
+		'computer',
+		'banana',
+	]
+	var t0 = present()
+	for (var i = 0; i < 100; i++) {
+		let rhymes = r.alliteration(words[i % words.length])
+	}
+	var t1 = present()
+
+	assert.isBelow(t1 - t0, 330, 'under 3ms per search fail')
+})
+
 test('Rhymes probably work', () => {
 	let rhymes = r.rhyme('scrilla')
+
 	assert.isTrue(_.includes(rhymes, 'KILLA'))
 	rhymes = r.rhyme('window')
-	assert.isTrue(_.includes(rhymes, 'INDOE'))
+	assert.isTrue(_.includes(rhymes, 'INDO'))
 	assert.isFalse(_.includes(rhymes, 'WINDOW'))
 	rhymes = r.rhyme('cheetah')
 	assert.isTrue(_.includes(rhymes, 'RITA'))
@@ -68,15 +95,21 @@ test('Multiword Rhyming works', () => {
 	assert.isTrue(_.includes(rhymes, 'MAYDAY'))
 })
 
+test('Alliteration doesnt return itself', () => {
+	let alliterations = r.alliteration('scrilla')
+	assert.isFalse(_.includes(alliterations, 'SCRILLA'))
+	alliterations = r.alliteration('window')
+	assert.isFalse(_.includes(alliterations, 'WINDOW'))
+})
+
 test('Alliteration probably works', () => {
 	let alliterations = r.alliteration('scrilla')
-	assert.isTrue(_.includes(alliterations, 'SCRATCH'))
+	assert.isTrue(_.includes(alliterations, 'SCRIBBLE'))
 	alliterations = r.alliteration('window')
-	assert.isTrue(_.includes(alliterations, 'WIPER'))
+	assert.isTrue(_.includes(alliterations, 'WILLOW'))
 	assert.isFalse(_.includes(alliterations, 'WHORE'))
-	assert.isFalse(_.includes(alliterations, 'WINDOW'))
 	alliterations = r.alliteration('cheetah')
-	assert.isTrue(_.includes(alliterations, 'CHILD'))
+	assert.isTrue(_.includes(alliterations, 'CHEAP'))
 })
 
 test('End Rhymes probably work', () => {
