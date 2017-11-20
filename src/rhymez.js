@@ -39,6 +39,7 @@ export default class Rhymez {
 				sounds = sounds.map(x => {
 					return x.replace(/[0-9]+/g, '')
 				})
+
 				if (!this.dict.has(word)) {
 					this.dict.set(word, [])
 					this.dict.get(word).push(sounds)
@@ -46,6 +47,29 @@ export default class Rhymez {
 					let words = this.dict.get(word).map(x => x.join(' '))
 					let wordSounds = sounds.join(' ')
 					if (!_.includes(words, wordSounds)) this.dict.get(word).push(sounds)
+				}
+				try {
+					let lastSound = _.last(sounds)
+					if (lastSound == 'ER') {
+						let newPronunciation = _.clone(sounds)
+						newPronunciation[newPronunciation.length - 1] = 'AH'
+
+						let words = this.dict.get(word).map(x => x.join(' '))
+						let wordSounds = newPronunciation.join(' ')
+						if (!_.includes(words, wordSounds)) this.dict.get(word).push(newPronunciation)
+					}
+					if (lastSound == 'NG') {
+						if (sounds[sounds.length - 2] == 'IH') {
+							let newPronunciation = _.clone(sounds)
+							newPronunciation[newPronunciation.length - 1] = 'N'
+
+							let words = this.dict.get(word).map(x => x.join(' '))
+							let wordSounds = newPronunciation.join(' ')
+							if (!_.includes(words, wordSounds)) this.dict.get(word).push(newPronunciation)
+						}
+					}
+				} catch (ex) {
+					console.log(ex)
 				}
 			}
 		})

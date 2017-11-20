@@ -83,6 +83,19 @@ test('Rhymes probably work', () => {
 	assert.isTrue(_.includes(rhymes, 'rita'))
 })
 
+test('Rhymes with er -> ah work', () => {
+	let rhymes = r.rhyme('bigger')
+	assert.isTrue(_.includes(rhymes, 'bigga'))
+})
+
+test('Rhymes with ing -> in work', () => {
+	let rhymes = r.rhyme('running')
+	console.log(rhymes)
+	assert.isTrue(_.includes(rhymes, "runnin'"))
+	assert.isTrue(_.includes(rhymes, 'gunning'))
+	assert.isTrue(_.includes(rhymes, 'running'))
+})
+
 test('Assonance likely works', () => {
 	let rhymes = r.assonance('hype')
 	assert.isTrue(_.includes(rhymes, 'night'))

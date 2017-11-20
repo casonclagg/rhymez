@@ -4,7 +4,11 @@ let utt = require('./lib/utterance-util').default
 
 let r = new Rhymez()
 
-console.log(r.endRhyme('dickhole'))
+console.log(r.getPronunciations('nigger'))
+console.log(r.getPronunciations('nigga'))
+
+console.log(r.getPronunciations('killing'))
+console.log(r.getPronunciations('killin'))
 // let dictionary = new Map()
 
 // for (var i = 0; i < 1000; i++) {
