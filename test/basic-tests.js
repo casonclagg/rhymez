@@ -19,12 +19,6 @@ test('getPronunciations can handle single words', () => {
 	assert.isAtLeast(pronunciations.length, 1, 'Should have pronunciations')
 })
 
-// test('getPronunciations can handle multiple words', () => {
-// 	let pronunciations = r.getPronunciations('pay day')
-// 	assert.isAtLeast(pronunciations.length, 1, 'Should have pronunciations')
-// })
-
-// 100 in 55ms
 test('Rhymes is fast?', () => {
 	let words = ['scrilla', 'dough', 'day', 'test', 'air', 'flow', 'key', 'kilo', 'floor', 'desk', 'ramp', 'screen', 'transformer', 'computer', 'banana']
 	var t0 = present()
@@ -33,10 +27,9 @@ test('Rhymes is fast?', () => {
 	}
 	var t1 = present()
 
-	assert.isBelow(t1 - t0, 120, 'under 1ms per search fail')
+	assert.isBelow(t1 - t0, 10, 'under .ms per search fail')
 })
 
-// 100 in 200ms
 test('Alliteration is fast?', () => {
 	let words = ['scrilla', 'dough', 'day', 'test', 'air', 'flow', 'kilo', 'floor', 'idiot', 'ramp', 'screen', 'transformer', 'computer', 'banana']
 	var t0 = present()
@@ -45,10 +38,9 @@ test('Alliteration is fast?', () => {
 	}
 	var t1 = present()
 
-	assert.isBelow(t1 - t0, 330, 'under 3ms per search fail')
+	assert.isBelow(t1 - t0, 10, 'under .1ms per search fail')
 })
 
-// 100 in 100ms
 test('Assonance is fast?', () => {
 	let words = ['scrilla', 'dough', 'day', 'test', 'air', 'flow', 'kilo', 'floor', 'idiot', 'ramp', 'screen', 'transformer', 'computer', 'banana']
 	var t0 = present()
@@ -57,10 +49,9 @@ test('Assonance is fast?', () => {
 	}
 	var t1 = present()
 
-	assert.isBelow(t1 - t0, 330, 'under 3ms per search fail')
+	assert.isBelow(t1 - t0, 10, 'under .1ms per search fail')
 })
 
-// 100 in 300ms
 test('End Rhymes is fast?', () => {
 	let words = ['scrilla', 'dough', 'day', 'test', 'air', 'flow', 'kilo', 'floor', 'idiot', 'ramp', 'screen', 'transformer', 'computer', 'banana']
 	var t0 = present()
@@ -69,7 +60,7 @@ test('End Rhymes is fast?', () => {
 	}
 	var t1 = present()
 
-	assert.isBelow(t1 - t0, 430, 'under 3ms per search fail')
+	assert.isBelow(t1 - t0, 10, 'under .1ms per search fail')
 })
 
 test('Rhymes probably work', () => {
@@ -109,19 +100,6 @@ test('Assonance likely works', () => {
 	assert.isFalse(_.includes(rhymes, 'bake'))
 })
 
-// test('Multiword Rhyming works', () => {
-// 	let rhymes = r.rhyme('pay day')
-// 	assert.isTrue(_.includes(rhymes, 'heyday'))
-// 	assert.isTrue(_.includes(rhymes, 'mayday'))
-// })
-
-// test('Alliteration doesnt return itself', () => {
-// 	let alliterations = r.alliteration('scrilla')
-// 	assert.isFalse(_.includes(alliterations, 'scrilla'))
-// 	alliterations = r.alliteration('window')
-// 	assert.isFalse(_.includes(alliterations, 'window'))
-// })
-
 test('Alliteration probably works', () => {
 	let alliterations = r.alliteration('scrilla')
 	assert.isTrue(_.includes(alliterations, 'scribble'))
@@ -144,52 +122,3 @@ test('End Rhymes probably work', () => {
 	assert.isTrue(_.includes(rhymes, 'slat'))
 	assert.isTrue(_.includes(rhymes, 'pussycat'))
 })
-
-// test('End Rhymes', () => {
-// 	let rhymes = r.endRhyme('scrilla')
-// 	assert.isTrue(_.includes(rhymes, 'HELLA'))
-// 	rhymes = r.endRhyme('common')
-// 	assert.isTrue(_.includes(rhymes, 'BUTTON'))
-// 	assert.isTrue(_.includes(rhymes, 'LEMON'))
-// 	assert.isFalse(_.includes(rhymes, 'COMMON'))
-// 	rhymes = r.endRhyme('HellCat')
-// 	assert.isTrue(_.includes(rhymes, 'ARISTOCRAT'))
-// 	assert.isTrue(_.includes(rhymes, 'SLAT'))
-// 	assert.isTrue(_.includes(rhymes, 'PUSSYCAT'))
-// 	rhymes = r.endRhyme2('toro', 0)
-// 	console.log(rhymes)
-// 	assert.isFalse(_.includes(rhymes, 'BOBO'))
-// 	assert.isFalse(_.includes(rhymes, 'SOLO'))
-// 	assert.isTrue(_.includes(rhymes, 'GORO'))
-// 	rhymes = r.endRhyme2('ARISTOCRAT', 0)
-// 	console.log(rhymes)
-// 	rhymes = r.endRhyme2('ARISTOCRAT', 1)
-// 	console.log(rhymes)
-// 	rhymes = r.endRhyme2('ARISTOCRAT', 2)
-// 	console.log(rhymes)
-// })
-
-// TODO - Required and Admired.. Rhymezone owns rhymez at this...
-//Directory Broke Multirhymes
-//console.log(r.pronunciation('acquired'))
-//console.log(r.pronunciation('required'))
-//assert.isTrue(_.includes(rhymes, "ACQUIRED"))
-//// TODO - its more than just super loose assonance, the G from guns comes into play with the g from orange...
-//// assert.isTrue(_.includes(rhymes, "MORE GUNS"))
-//let rhymes = r.rhyme("Payday", {
-//assert.isFalse(_.includes(rhymes, "SLAY DAY"))
-//assonant = r.assonance("payday")
-//assert.isTrue(_.includes(assonant, "MELEE"))
-//let rhymes = r.rhyme("generate")
-//assert.isTrue(_.includes(rhymes, "VENERATE"))
-//rhymes = r.rhyme("rate")
-//assert.isFalse(_.includes(rhymes, "VENERATE"))
-//assert.isTrue(_.includes(rhymes, "BAIT"))
-// Orange
-// `AO1 R AH0 N JH`
-
-// More GUNS
-// `M AO1 R G AH1 N Z`
-
-// Floor Lunge
-//`F L AO1 R L AH1 N JH`

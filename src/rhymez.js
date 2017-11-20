@@ -90,10 +90,12 @@ export default class Rhymez {
 				if (rhymes) matches = matches.concat(rhymes)
 			}
 
+			// TODO - Removed for performance reasons for a little bit
 			// _.remove(matches, x => this.hasSameUtterances(x, word))
 			// matches = matches.filter(x => {
 			// 	return x => !this.hasSameUtterances(x, word)
 			// })
+
 			return matches
 		} catch (ex) {
 			return null

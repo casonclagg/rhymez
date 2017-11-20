@@ -2,7 +2,7 @@
 	"name": "rhymez",
 	"description":
 		"Find perfect rhymes, alliterations, and end rhymes.  Uses a much larger phoneme list than the standard cmudict that was built using g2p-seq2seq and the CMU Sphinx neural net.  The words it was trained on were pulled from every rap lyric ever.",
-	"version": "3.0.2",
+	"version": "3.0.3",
 	"main": "./lib/rhymez.js",
 	"devDependencies": {
 		"babel-cli": "^6.2.4",
@@ -16,10 +16,8 @@
 	},
 	"scripts": {
 		"build": "babel src --out-dir lib && cp ./src/data/* ./lib/data/",
-		"test-es5":
-			"npm run build && babel test --out-dir test-es5 && sed -i '.bak' 's/\\/src\\//\\/lib\\//' test-es5/*.js",
-		"test":
-			"npm run build && mocha --ui qunit --timeout 3000 --reporter list --compilers js:babel-core/register --require test/mocha-babel",
+		"test-es5": "npm run build && babel test --out-dir test-es5 && sed -i '.bak' 's/\\/src\\//\\/lib\\//' test-es5/*.js",
+		"test": "npm run build && mocha --ui qunit --timeout 3000 --reporter list --compilers js:babel-core/register --require test/mocha-babel",
 		"prepublish": "npm run build"
 	},
 	"babel": {
