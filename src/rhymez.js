@@ -34,7 +34,7 @@ export default class Rhymez {
 		lines.forEach(line => {
 			if (line.match(/^[A-Z]/i)) {
 				var words = line.split(/\s+/)
-				var word = words[0].replace(/\(\d+\)$/, '').toUpperCase()
+				var word = words[0].replace(/\(\d+\)$/, '').toLowerCase() // Kills the #s... might make rhymes too loose?
 				let sounds = words.slice(1)
 				sounds = sounds.map(x => {
 					return x.replace(/[0-9]+/g, '')
@@ -43,129 +43,82 @@ export default class Rhymez {
 					this.dict.set(word, [])
 					this.dict.get(word).push(sounds)
 				} else if (append) {
-					this.dict.get(word).push(sounds)
+					let words = this.dict.get(word).map(x => x.join(' '))
+					let wordSounds = sounds.join(' ')
+					if (!_.includes(words, wordSounds)) this.dict.get(word).push(sounds)
 				}
 			}
 		})
 	}
 
-	// =_(
-	permutations(arrayOfArraysOfArrays) {
-		if (arrayOfArraysOfArrays.length === 0) return []
-		if (arrayOfArraysOfArrays.length === 1) return arrayOfArraysOfArrays[0]
-		var result = []
-		var allCasesOfRest = this.permutations(arrayOfArraysOfArrays.slice(1))
-		for (var c in allCasesOfRest) {
-			for (var i = 0; i < arrayOfArraysOfArrays[0].length; i++) {
-				let thing = arrayOfArraysOfArrays[0][i].join(' ') + ' ' + allCasesOfRest[c].join(' ')
-				result.push(thing)
-			}
-		}
-		return result.map(x => x.split(' '))
+	getPronunciations(word) {
+		return this.dict.get(word.toLowerCase())
 	}
 
-	getPronunciations(word) {
-		let words = word.split(' ')
-		let wordsPronunciations = words.map(w => this.dict.get(w.toUpperCase()))
-		let pronunciations = this.permutations(wordsPronunciations)
-		return pronunciations
+	getThing(word, utteranceFunction, dictionary) {
+		if (!word) return null
+		try {
+			let pronunciations = this.getPronunciations(word)
+			let matches = []
+			for (let pronunciation of pronunciations) {
+				let activeUtterances = utteranceFunction(pronunciation)
+				let rhymes = dictionary.get(activeUtterances)
+				if (rhymes) matches = matches.concat(rhymes)
+			}
+
+			// _.remove(matches, x => this.hasSameUtterances(x, word))
+			// matches = matches.filter(x => {
+			// 	return x => !this.hasSameUtterances(x, word)
+			// })
+			return matches
+		} catch (ex) {
+			return null
+		}
+	}
+
+	isThing(word, otherWord, utteranceFunction) {
+		let pronunciations = this.getPronunciations(word)
+		let otherPronunciations = this.getPronunciations(otherWord)
+		for (let pronunciation of pronunciations) {
+			for (let otherPron of otherPronunciations) {
+				let a = utteranceFunction(pronunciation)
+				let b = utteranceFunction(otherPron)
+				if (a == b) return true
+			}
+		}
+		return false
 	}
 
 	alliteration(word) {
-		if (!word) return null
-		try {
-			let pronunciations = this.getPronunciations(word)
-			let matches = []
-			for (let pronunciation of pronunciations) {
-				let activeUtterances = utteranceUtil.alliterationUtterances(pronunciation)
-				let rhymes = this.alliterationMap.get(activeUtterances)
-				if (rhymes) matches = matches.concat(rhymes)
-			}
-			matches = matches.filter(x => {
-				return !this.hasSameUtterances(x, word)
-			})
-			return matches
-		} catch (ex) {
-			return null
-		}
+		return this.getThing(word, utteranceUtil.alliterationUtterances, this.alliterationMap)
+	}
+
+	isAlliteration(word, otherWord) {
+		return this.isThing(word, otherWord, utteranceUtil.alliterationUtterances)
 	}
 
 	rhyme(word) {
-		if (!word) return null
-		try {
-			let pronunciations = this.getPronunciations(word)
-			let matches = []
-			for (let pronunciation of pronunciations) {
-				let activeUtterances = utteranceUtil.perfectRhymeUtterances(pronunciation)
-				let rhymes = this.rhymeMap.get(activeUtterances)
-				if (rhymes) matches = matches.concat(rhymes)
-			}
-			matches = matches.filter(x => {
-				return !this.hasSameUtterances(x, word)
-			})
-			return matches
-		} catch (ex) {
-			return null
-		}
+		return this.getThing(word, utteranceUtil.perfectRhymeUtterances, this.rhymeMap)
+	}
+
+	isRhyme(word, otherWord) {
+		return this.isThing(word, otherWord, utteranceUtil.perfectRhymeUtterances)
 	}
 
 	endRhyme(word) {
-		if (!word) return null
-		try {
-			let pronunciations = this.getPronunciations(word)
-			let matches = []
-			for (let pronunciation of pronunciations) {
-				let activeUtterances = utteranceUtil.endRhymeUtterances(pronunciation)
-				let rhymes = this.endRhymeMap.get(activeUtterances)
-				if (rhymes) matches = matches.concat(rhymes)
-			}
-			matches = matches.filter(x => {
-				return !this.hasSameUtterances(x, word)
-			})
-			return matches
-		} catch (ex) {
-			return null
-		}
+		return this.getThing(word, utteranceUtil.endRhymeUtterances, this.endRhymeMap)
 	}
 
-	endRhyme2(word, count) {
-		if (!word) return null
-		try {
-			let pronunciations = this.getPronunciations(word)
-			let matches = []
-			for (let pronunciation of pronunciations) {
-				let activeUtterances = utteranceUtil.endRhyme2Utterances(pronunciation, count)
-				console.log(activeUtterances)
-				let rhymes = this.endRhymeMap.get(activeUtterances)
-				if (rhymes) matches = matches.concat(rhymes)
-			}
-			matches = matches.filter(x => {
-				return !this.hasSameUtterances(x, word)
-			})
-			return matches
-		} catch (ex) {
-			console.log(ex)
-			return null
-		}
+	isEndRhyme(word, otherWord) {
+		return this.isThing(word, otherWord, utteranceUtil.endRhymeUtterances)
 	}
 
 	assonance(word) {
-		if (!word) return null
-		try {
-			let pronunciations = this.getPronunciations(word)
-			let matches = []
-			for (let pronunciation of pronunciations) {
-				let activeUtterances = utteranceUtil.assonantUtterances(pronunciation)
-				let rhymes = this.assonanceMap.get(activeUtterances)
-				if (rhymes) matches = matches.concat(rhymes)
-			}
-			matches = matches.filter(x => {
-				return !this.hasSameUtterances(x, word)
-			})
-			return matches
-		} catch (ex) {
-			return null
-		}
+		return this.getThing(word, utteranceUtil.assonantUtterances, this.assonanceMap)
+	}
+
+	isAssonance(word, otherWord) {
+		return this.isThing(word, otherWord, utteranceUtil.assonantUtterances)
 	}
 
 	hasSameUtterances(word1, word2) {
@@ -242,6 +195,6 @@ export default class Rhymez {
 	}
 
 	pronunciation(word) {
-		return this.dict.get(word.toUpperCase())
+		return this.dict.get(word.toLowerCase())
 	}
 }
