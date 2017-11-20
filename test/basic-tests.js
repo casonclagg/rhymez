@@ -18,23 +18,7 @@ test('getPronunciations can handle multiple words', () => {
 })
 
 test('Rhymes is fast?', () => {
-	let words = [
-		'scrilla',
-		'dough',
-		'day',
-		'test',
-		'air',
-		'flow',
-		'key',
-		'kilo',
-		'floor',
-		'desk',
-		'ramp',
-		'screen',
-		'transformer',
-		'computer',
-		'banana',
-	]
+	let words = ['scrilla', 'dough', 'day', 'test', 'air', 'flow', 'key', 'kilo', 'floor', 'desk', 'ramp', 'screen', 'transformer', 'computer', 'banana']
 	var t0 = present()
 	for (var i = 0; i < 100; i++) {
 		let rhymes = r.rhyme(_.sample(words))
@@ -45,22 +29,7 @@ test('Rhymes is fast?', () => {
 })
 
 test('Alliteration is fast?', () => {
-	let words = [
-		'scrilla',
-		'dough',
-		'day',
-		'test',
-		'air',
-		'flow',
-		'kilo',
-		'floor',
-		'idiot',
-		'ramp',
-		'screen',
-		'transformer',
-		'computer',
-		'banana',
-	]
+	let words = ['scrilla', 'dough', 'day', 'test', 'air', 'flow', 'kilo', 'floor', 'idiot', 'ramp', 'screen', 'transformer', 'computer', 'banana']
 	var t0 = present()
 	for (var i = 0; i < 100; i++) {
 		let rhymes = r.alliteration(words[i % words.length])
@@ -124,6 +93,30 @@ test('End Rhymes probably work', () => {
 	assert.isTrue(_.includes(rhymes, 'SLAT'))
 	assert.isTrue(_.includes(rhymes, 'PUSSYCAT'))
 })
+
+// test('End Rhymes', () => {
+// 	let rhymes = r.endRhyme('scrilla')
+// 	assert.isTrue(_.includes(rhymes, 'HELLA'))
+// 	rhymes = r.endRhyme('common')
+// 	assert.isTrue(_.includes(rhymes, 'BUTTON'))
+// 	assert.isTrue(_.includes(rhymes, 'LEMON'))
+// 	assert.isFalse(_.includes(rhymes, 'COMMON'))
+// 	rhymes = r.endRhyme('HellCat')
+// 	assert.isTrue(_.includes(rhymes, 'ARISTOCRAT'))
+// 	assert.isTrue(_.includes(rhymes, 'SLAT'))
+// 	assert.isTrue(_.includes(rhymes, 'PUSSYCAT'))
+// 	rhymes = r.endRhyme2('toro', 0)
+// 	console.log(rhymes)
+// 	assert.isFalse(_.includes(rhymes, 'BOBO'))
+// 	assert.isFalse(_.includes(rhymes, 'SOLO'))
+// 	assert.isTrue(_.includes(rhymes, 'GORO'))
+// 	rhymes = r.endRhyme2('ARISTOCRAT', 0)
+// 	console.log(rhymes)
+// 	rhymes = r.endRhyme2('ARISTOCRAT', 1)
+// 	console.log(rhymes)
+// 	rhymes = r.endRhyme2('ARISTOCRAT', 2)
+// 	console.log(rhymes)
+// })
 
 // TODO - Required and Admired.. Rhymezone owns rhymez at this...
 //Directory Broke Multirhymes

@@ -8,6 +8,7 @@ export default {
 	assonantUtterances,
 	endRhymeUtterances,
 	perfectRhymeUtterances,
+	endRhyme2Utterances,
 }
 
 function perfectRhymeUtterances(ws) {
@@ -33,11 +34,26 @@ function endRhymeUtterances(ws) {
 		})
 	} else {
 		lastIndex = _.findLastIndex(ws, w => {
-			return !w.match(IS_CONSONANT)
+			return w.match(IS_CONSONANT)
 		})
 	}
 
 	return ws.slice(lastIndex).join(' ')
+}
+
+function endRhyme2Utterances(ws, count) {
+	let lastIndex = 0
+	if (_.last(ws).match(IS_CONSONANT)) {
+		lastIndex = _.findLastIndex(ws, w => {
+			return !w.match(IS_CONSONANT)
+		})
+	} else {
+		lastIndex = _.findLastIndex(ws, w => {
+			return w.match(IS_CONSONANT)
+		})
+	}
+	let newIndex = Math.max(0, lastIndex - count)
+	return ws.slice(newIndex).join(' ')
 }
 
 function alliterationUtterances(ws) {

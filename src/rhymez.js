@@ -128,6 +128,27 @@ export default class Rhymez {
 		}
 	}
 
+	endRhyme2(word, count) {
+		if (!word) return null
+		try {
+			let pronunciations = this.getPronunciations(word)
+			let matches = []
+			for (let pronunciation of pronunciations) {
+				let activeUtterances = utteranceUtil.endRhyme2Utterances(pronunciation, count)
+				console.log(activeUtterances)
+				let rhymes = this.endRhymeMap.get(activeUtterances)
+				if (rhymes) matches = matches.concat(rhymes)
+			}
+			matches = matches.filter(x => {
+				return !this.hasSameUtterances(x, word)
+			})
+			return matches
+		} catch (ex) {
+			console.log(ex)
+			return null
+		}
+	}
+
 	assonance(word) {
 		if (!word) return null
 		try {
