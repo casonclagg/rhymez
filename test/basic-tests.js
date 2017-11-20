@@ -88,9 +88,14 @@ test('Rhymes with er -> ah work', () => {
 	assert.isTrue(_.includes(rhymes, 'bigga'))
 })
 
+test('Shit doesnt rhyme with cheat, but does rhyme with hit', () => {
+	let rhymes = r.rhyme('shit')
+	assert.isTrue(_.includes(rhymes, 'hit'))
+	assert.isFalse(_.includes(rhymes, 'cheat'))
+})
+
 test('Rhymes with ing -> in work', () => {
 	let rhymes = r.rhyme('running')
-	console.log(rhymes)
 	assert.isTrue(_.includes(rhymes, "runnin'"))
 	assert.isTrue(_.includes(rhymes, 'gunning'))
 	assert.isTrue(_.includes(rhymes, 'running'))
